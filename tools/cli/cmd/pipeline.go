@@ -19,7 +19,7 @@ import (
 
 	"github.com/erda-project/erda/pkg/terminal/table"
 	"github.com/erda-project/erda/tools/cli/command"
-	"github.com/erda-project/erda/tools/cli/dicedir"
+	"github.com/erda-project/erda/tools/cli/utils"
 )
 
 // TODO move to .erda/pipelines
@@ -34,7 +34,7 @@ var PIPELINE = command.Command{
 }
 
 func PipelineGet(ctx *command.Context, noHeaders bool) error {
-	branch, err := dicedir.GetWorkspaceBranch()
+	branch, err := utils.GetWorkspaceBranch()
 	if err != nil {
 		return err
 	}
@@ -56,11 +56,11 @@ func PipelineGet(ctx *command.Context, noHeaders bool) error {
 	//}
 
 	// compatible to dice
-	diceDir, err := dicedir.FindProjectDiceDir()
-	if err != nil && err != dicedir.NotExist {
+	diceDir, err := utils.FindProjectDiceDir()
+	if err != nil && err != utils.NotExist {
 		return err
 	} else if err == nil {
-		ymls, err := dicedir.GetWorkspacePipelines(diceDir)
+		ymls, err := utils.GetWorkspacePipelines(diceDir)
 		if err != nil {
 			return err
 		}
@@ -69,7 +69,7 @@ func PipelineGet(ctx *command.Context, noHeaders bool) error {
 			// fmt.Println(color_str.Yellow("Warning! Should rename .dice to .erda"))
 		}
 		for _, y := range ymls {
-			pipelineymls = append(pipelineymls, path.Join(dicedir.ProjectDiceDir, y))
+			pipelineymls = append(pipelineymls, path.Join(utils.ProjectDiceDir, y))
 		}
 	}
 

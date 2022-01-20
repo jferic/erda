@@ -23,8 +23,7 @@ import (
 
 	"github.com/erda-project/erda/apistructs"
 	"github.com/erda-project/erda/tools/cli/command"
-	"github.com/erda-project/erda/tools/cli/format"
-	"github.com/erda-project/erda/tools/cli/prettyjson"
+	"github.com/erda-project/erda/tools/cli/utils"
 )
 
 var APPLICATIONCREATE = command.Command{
@@ -64,31 +63,31 @@ func ApplicationCreate(ctx *command.Context, projectId uint64, name, mode, desc 
 	resp, err := ctx.Post().Path("/api/applications").JSONBody(request).Do().Body(&b)
 	if err != nil {
 		return fmt.Errorf(
-			format.FormatErrMsg("create", "failed to request ("+err.Error()+")", false))
+			utils.FormatErrMsg("create", "failed to request ("+err.Error()+")", false))
 	}
 
 	if !resp.IsOK() {
-		return fmt.Errorf(format.FormatErrMsg("create",
+		return fmt.Errorf(utils.FormatErrMsg("create",
 			fmt.Sprintf("failed to request, status-code: %d, content-type: %s, raw bod: %s",
 				resp.StatusCode(), resp.ResponseHeader("Content-Type"), b.String()), false))
 	}
 
 	if err := json.Unmarshal(b.Bytes(), &response); err != nil {
-		return fmt.Errorf(format.FormatErrMsg("create",
+		return fmt.Errorf(utils.FormatErrMsg("create",
 			fmt.Sprintf("failed to unmarshal application create response ("+err.Error()+")"), false))
 	}
 
 	if !response.Success {
-		return fmt.Errorf(format.FormatErrMsg("create",
+		return fmt.Errorf(utils.FormatErrMsg("create",
 			fmt.Sprintf("failed to request, error code: %s, error message: %s",
 				response.Error.Code, response.Error.Msg), false))
 	}
 
 	ctx.Succ("Application created.")
 
-	s, err := prettyjson.Marshal(response.Data)
+	s, err := utils.Marshal(response.Data)
 	if err != nil {
-		return fmt.Errorf(format.FormatErrMsg("create",
+		return fmt.Errorf(utils.FormatErrMsg("create",
 			"failed to prettyjson marshal application data ("+err.Error()+")", false))
 	}
 

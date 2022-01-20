@@ -18,12 +18,13 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/erda-project/erda/tools/cli/utils"
+
 	"github.com/pkg/errors"
 
 	"github.com/erda-project/erda/apistructs"
 	"github.com/erda-project/erda/pkg/terminal/color_str"
 	"github.com/erda-project/erda/tools/cli/command"
-	"github.com/erda-project/erda/tools/cli/format"
 )
 
 func GetPipeline(ctx *command.Context, pipelineId uint64) (apistructs.PipelineDetailDTO, error) {
@@ -124,18 +125,18 @@ func BuildCheckLoop(ctx *command.Context, pipelineId uint64) error {
 			pipelineInfo.Status == apistructs.PipelineStatusFailed ||
 			pipelineInfo.Status == apistructs.PipelineStatusTimeout {
 			fmt.Print(color_str.Green(fmt.Sprintf("build faild, status: %s, time elapsed: %s\n",
-				pipelineInfo.Status, format.ToTimeSpanString(int(pipelineInfo.CostTimeSec)))))
+				pipelineInfo.Status, utils.ToTimeSpanString(int(pipelineInfo.CostTimeSec)))))
 			var msg = "nil"
 			if showMessage := pipelineInfo.Extra.ShowMessage; showMessage != nil {
 				fmt.Println(showMessage.Stacks)
 				msg = showMessage.Msg
 			}
-			return fmt.Errorf(format.FormatErrMsg("pipeline info",
+			return fmt.Errorf(utils.FormatErrMsg("pipeline info",
 				"build error: "+msg, false))
 		}
 
 		if pipelineInfo.Status == apistructs.PipelineStatusSuccess {
-			fmt.Print(color_str.Green(fmt.Sprintf("\nbuild succ, time elapsed: %s\n", format.ToTimeSpanString(int(pipelineInfo.CostTimeSec)))))
+			fmt.Print(color_str.Green(fmt.Sprintf("\nbuild succ, time elapsed: %s\n", utils.ToTimeSpanString(int(pipelineInfo.CostTimeSec)))))
 			return nil
 		}
 

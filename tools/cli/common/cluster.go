@@ -19,10 +19,11 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/erda-project/erda/tools/cli/utils"
+
 	"github.com/erda-project/erda/apistructs"
 	"github.com/erda-project/erda/pkg/http/httpclient"
 	"github.com/erda-project/erda/tools/cli/command"
-	"github.com/erda-project/erda/tools/cli/format"
 )
 
 func GetClusters(ctx *command.Context, orgid string) (apistructs.ClusterListResponse, error) {
@@ -38,22 +39,22 @@ func GetClusters(ctx *command.Context, orgid string) (apistructs.ClusterListResp
 	}
 	if err != nil {
 		return apistructs.ClusterListResponse{}, fmt.Errorf(
-			format.FormatErrMsg("get clusters", "failed to request ("+err.Error()+")", false))
+			utils.FormatErrMsg("get clusters", "failed to request ("+err.Error()+")", false))
 	}
 
 	if !response.IsOK() {
-		return apistructs.ClusterListResponse{}, fmt.Errorf(format.FormatErrMsg("get clusters",
+		return apistructs.ClusterListResponse{}, fmt.Errorf(utils.FormatErrMsg("get clusters",
 			fmt.Sprintf("failed to request, status-code: %d, content-type: %s, raw bod: %s",
 				response.StatusCode(), response.ResponseHeader("Content-Type"), b.String()), false))
 	}
 
 	if err := json.Unmarshal(b.Bytes(), &resp); err != nil {
-		return apistructs.ClusterListResponse{}, fmt.Errorf(format.FormatErrMsg("get clusters",
+		return apistructs.ClusterListResponse{}, fmt.Errorf(utils.FormatErrMsg("get clusters",
 			fmt.Sprintf("failed to unmarshal build detail response ("+err.Error()+")"), false))
 	}
 
 	if !resp.Success {
-		return apistructs.ClusterListResponse{}, fmt.Errorf(format.FormatErrMsg("get clusters",
+		return apistructs.ClusterListResponse{}, fmt.Errorf(utils.FormatErrMsg("get clusters",
 			fmt.Sprintf("failed to request, error code: %s, error message: %s",
 				resp.Error.Code, resp.Error.Msg), false))
 	}
@@ -67,28 +68,28 @@ func GetClusterDetail(ctx *command.Context, cluster string) (apistructs.GetClust
 
 	if cluster == "" {
 		return apistructs.GetClusterResponse{}, fmt.Errorf(
-			format.FormatErrMsg("get clusters", "missing required arg cluster", false))
+			utils.FormatErrMsg("get clusters", "missing required arg cluster", false))
 	}
 
 	response, err := ctx.Get().Path("/api/clusters/" + cluster).Do().Body(&b)
 	if err != nil {
-		return apistructs.GetClusterResponse{}, fmt.Errorf(format.FormatErrMsg(
+		return apistructs.GetClusterResponse{}, fmt.Errorf(utils.FormatErrMsg(
 			"get cluster detail", "failed to request ("+err.Error()+")", false))
 	}
 
 	if !response.IsOK() {
-		return apistructs.GetClusterResponse{}, fmt.Errorf(format.FormatErrMsg("get cluster detail",
+		return apistructs.GetClusterResponse{}, fmt.Errorf(utils.FormatErrMsg("get cluster detail",
 			fmt.Sprintf("failed to request, status-code: %d, content-type: %s, raw bod: %s",
 				response.StatusCode(), response.ResponseHeader("Content-Type"), b.String()), false))
 	}
 
 	if err := json.Unmarshal(b.Bytes(), &resp); err != nil {
-		return apistructs.GetClusterResponse{}, fmt.Errorf(format.FormatErrMsg("get cluster detail",
+		return apistructs.GetClusterResponse{}, fmt.Errorf(utils.FormatErrMsg("get cluster detail",
 			fmt.Sprintf("failed to unmarshal build detail response ("+err.Error()+")"), false))
 	}
 
 	if !resp.Success {
-		return apistructs.GetClusterResponse{}, fmt.Errorf(format.FormatErrMsg("get cluster detail",
+		return apistructs.GetClusterResponse{}, fmt.Errorf(utils.FormatErrMsg("get cluster detail",
 			fmt.Sprintf("failed to request, error code: %s, error message: %s",
 				resp.Error.Code, resp.Error.Msg), false))
 	}

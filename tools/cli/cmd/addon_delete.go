@@ -19,7 +19,7 @@ import (
 
 	"github.com/erda-project/erda/tools/cli/command"
 	"github.com/erda-project/erda/tools/cli/common"
-	"github.com/erda-project/erda/tools/cli/dicedir"
+	"github.com/erda-project/erda/tools/cli/utils"
 )
 
 var ADDONDELETE = command.Command{
@@ -50,7 +50,7 @@ func DeleteAddon(ctx *command.Context, orgId uint64, org string, addonId string,
 	}
 
 	if waitDelete {
-		err = dicedir.DoTaskWithTimeout(func() (bool, error) {
+		err = utils.DoTaskWithTimeout(func() (bool, error) {
 			resp, _, err := common.GetAddonResp(ctx, orgId, addonId)
 			if err != nil {
 				return false, err

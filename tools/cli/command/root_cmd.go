@@ -34,9 +34,8 @@ import (
 	"github.com/erda-project/erda/apistructs"
 	"github.com/erda-project/erda/pkg/http/httpclient"
 	"github.com/erda-project/erda/pkg/terminal/color_str"
-	"github.com/erda-project/erda/tools/cli/dicedir"
-	"github.com/erda-project/erda/tools/cli/format"
 	"github.com/erda-project/erda/tools/cli/status"
+	"github.com/erda-project/erda/tools/cli/utils"
 )
 
 var (
@@ -174,7 +173,7 @@ func getFullUse(cmd *cobra.Command) (string, error) {
 
 func ensureSessionInfos() (map[string]status.StatusInfo, error) {
 	sessionInfos, err := status.GetSessionInfos()
-	if err != nil && err != dicedir.NotExist {
+	if err != nil && err != utils.NotExist {
 		return nil, err
 	}
 	// file ~/.erda.d/sessions exist & and session for host also exist; otherwise need login fisrt
@@ -186,10 +185,10 @@ func ensureSessionInfos() (map[string]status.StatusInfo, error) {
 	}
 
 	if username == "" {
-		username = dicedir.InputNormal("Enter your erda username: ")
+		username = utils.InputNormal("Enter your erda username: ")
 	}
 	if password == "" {
-		password = dicedir.InputPWD("Enter your erda password: ")
+		password = utils.InputPWD("Enter your erda password: ")
 	}
 
 	// fetch session & user info according to host, username & password
@@ -209,7 +208,7 @@ func ensureSessionInfos() (map[string]status.StatusInfo, error) {
 func parseCtx() error {
 	if host == "" {
 		c, err := GetCurContext()
-		if err != nil && err != dicedir.NotExist && !os.IsNotExist(err) {
+		if err != nil && err != utils.NotExist && !os.IsNotExist(err) {
 			return err
 		}
 
@@ -220,8 +219,8 @@ func parseCtx() error {
 
 		if _, err := os.Stat(".git"); err == nil {
 			// fetch host from git remote url
-			info, err := dicedir.GetWorkspaceInfo(Remote)
-			if err != nil && err != dicedir.InvalidErdaRepo {
+			info, err := utils.GetWorkspaceInfo(Remote)
+			if err != nil && err != utils.InvalidErdaRepo {
 				return err
 			}
 
@@ -285,19 +284,19 @@ func fetchOrgIdByName(orgName string) (apistructs.OrgFetchResponse, error) {
 	}
 
 	if !response.IsOK() {
-		return apistructs.OrgFetchResponse{}, fmt.Errorf(format.FormatErrMsg("get organization detail",
+		return apistructs.OrgFetchResponse{}, fmt.Errorf(utils.FormatErrMsg("get organization detail",
 			fmt.Sprintf("failed to request, status-code: %d, content-type: %s, raw bod: %s",
 				response.StatusCode(), response.ResponseHeader("Content-Type"), b.String()), false))
 	}
 
 	var resp apistructs.OrgFetchResponse
 	if err := json.Unmarshal(b.Bytes(), &resp); err != nil {
-		return apistructs.OrgFetchResponse{}, fmt.Errorf(format.FormatErrMsg("get organization detail",
+		return apistructs.OrgFetchResponse{}, fmt.Errorf(utils.FormatErrMsg("get organization detail",
 			fmt.Sprintf("failed to unmarshal organization detail response ("+err.Error()+")"), false))
 	}
 
 	if !resp.Success {
-		return resp, fmt.Errorf(format.FormatErrMsg("get organization detail",
+		return resp, fmt.Errorf(utils.FormatErrMsg("get organization detail",
 			fmt.Sprintf("failed to request, error code: %s, error message: %s",
 				resp.Error.Code, resp.Error.Msg), false))
 	}
@@ -319,7 +318,7 @@ func fetchGitUserInfo(host, credentialStorage string) (string, string, error) {
 	c1 := exec.Command("echo", fmt.Sprintf("host=%s", host))
 	c2 := exec.Command("git", fmt.Sprintf("credential-%s", credentialStorage), "get")
 
-	rs, err := dicedir.PipeCmds(c1, c2)
+	rs, err := utils.PipeCmds(c1, c2)
 	if err != nil {
 		return "", "", err
 	}
@@ -353,16 +352,16 @@ func loginAndStoreSession(host, username, password string) error {
 	var body bytes.Buffer
 	res, err := ctx.Post().Path("/login").FormBody(form).Do().Body(&body)
 	if err != nil {
-		return fmt.Errorf(format.FormatErrMsg("login", "error: "+err.Error(), false))
+		return fmt.Errorf(utils.FormatErrMsg("login", "error: "+err.Error(), false))
 	}
 	if !res.IsOK() {
-		return fmt.Errorf(format.FormatErrMsg("login",
+		return fmt.Errorf(utils.FormatErrMsg("login",
 			"failed to login, status code: "+strconv.Itoa(res.StatusCode()), false))
 	}
 	var s status.StatusInfo
 	d := json.NewDecoder(&body)
 	if err := d.Decode(&s); err != nil {
-		return fmt.Errorf(format.FormatErrMsg(
+		return fmt.Errorf(utils.FormatErrMsg(
 			"login", "failed to  decode login response ("+err.Error()+")", false))
 	}
 	// 从 openapi 获取的 session 无过期时间，暂设 12 小时，小于 openapi 的 24 小时

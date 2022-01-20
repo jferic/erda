@@ -29,7 +29,7 @@ import (
 	"github.com/erda-project/erda/pkg/terminal/table"
 	"github.com/erda-project/erda/tools/cli/command"
 	"github.com/erda-project/erda/tools/cli/common"
-	"github.com/erda-project/erda/tools/cli/dicedir"
+	"github.com/erda-project/erda/tools/cli/utils"
 )
 
 var VIEW = command.Command{
@@ -61,14 +61,14 @@ func PipelineView(ctx *command.Context, branch string, pipelineID uint64, watch 
 	}
 
 	if branch == "" {
-		b, err := dicedir.GetWorkspaceBranch()
+		b, err := utils.GetWorkspaceBranch()
 		if err != nil {
 			return err
 		}
 		branch = b
 	}
 
-	info, err := dicedir.GetWorkspaceInfo(command.Remote)
+	info, err := utils.GetWorkspaceInfo(command.Remote)
 	if err != nil {
 		return errors.Wrap(err, "failed to get  workspace info")
 	}
@@ -102,7 +102,7 @@ func PipelineView(ctx *command.Context, branch string, pipelineID uint64, watch 
 		if v.Branch == branch {
 			for _, item := range v.PagingYmlNames {
 				if item != apistructs.DefaultPipelineYmlName &&
-					!strings.HasPrefix(item, dicedir.ProjectPipelineDir) {
+					!strings.HasPrefix(item, utils.ProjectPipelineDir) {
 					ymlName = item
 				}
 			}

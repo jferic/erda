@@ -27,7 +27,7 @@ import (
 
 	"github.com/erda-project/erda/apistructs"
 	"github.com/erda-project/erda/tools/cli/command"
-	"github.com/erda-project/erda/tools/cli/format"
+	"github.com/erda-project/erda/tools/cli/utils"
 )
 
 var EXTENSIONSPULL = command.Command{
@@ -53,22 +53,22 @@ func RunExtensionsPull(ctx *command.Context, extension string, dir string) error
 
 	if err != nil {
 		return fmt.Errorf(
-			format.FormatErrMsg("extension get", "failed to request ("+err.Error()+")", false))
+			utils.FormatErrMsg("extension get", "failed to request ("+err.Error()+")", false))
 	}
 
 	if !response.IsOK() {
-		return fmt.Errorf(format.FormatErrMsg("extension get",
+		return fmt.Errorf(utils.FormatErrMsg("extension get",
 			fmt.Sprintf("failed to request, status-code: %d, content-type: %s, raw bod: %s",
 				response.StatusCode(), response.ResponseHeader("Content-Type"), b.String()), false))
 	}
 
 	if err = json.Unmarshal(b.Bytes(), &resp); err != nil {
-		return fmt.Errorf(format.FormatErrMsg("extension get",
+		return fmt.Errorf(utils.FormatErrMsg("extension get",
 			fmt.Sprintf("failed to unmarshal build extension response ("+err.Error()+")"), false))
 	}
 
 	if !resp.Success {
-		return fmt.Errorf(format.FormatErrMsg("extension get",
+		return fmt.Errorf(utils.FormatErrMsg("extension get",
 			fmt.Sprintf("failed to request, error code: %s, error message: %s",
 				resp.Error.Code, resp.Error.Msg), false))
 	}

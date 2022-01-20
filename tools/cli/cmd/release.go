@@ -20,7 +20,7 @@ import (
 	"github.com/erda-project/erda/pkg/terminal/table"
 	"github.com/erda-project/erda/tools/cli/command"
 	"github.com/erda-project/erda/tools/cli/common"
-	"github.com/erda-project/erda/tools/cli/dicedir"
+	"github.com/erda-project/erda/tools/cli/utils"
 )
 
 var RELEASE = command.Command{
@@ -51,7 +51,7 @@ func ReleaseList(ctx *command.Context, noHeaders bool, orgId, applicationId uint
 	}
 
 	num := 0
-	err = dicedir.PagingView(func(pageNo, pageSize int) (bool, error) {
+	err = utils.PagingView(func(pageNo, pageSize int) (bool, error) {
 		list, err := common.GetPagingReleases(ctx, orgId, applicationId, branch, isVersin, pageNo, pageSize)
 		if err != nil {
 			return false, err

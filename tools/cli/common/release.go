@@ -22,8 +22,7 @@ import (
 
 	"github.com/erda-project/erda/apistructs"
 	"github.com/erda-project/erda/tools/cli/command"
-	"github.com/erda-project/erda/tools/cli/dicedir"
-	"github.com/erda-project/erda/tools/cli/format"
+	"github.com/erda-project/erda/tools/cli/utils"
 )
 
 func GetReleaseDetail(ctx *command.Context, orgId uint64, releaseId string) (apistructs.ReleaseGetResponseData, error) {
@@ -35,23 +34,23 @@ func GetReleaseDetail(ctx *command.Context, orgId uint64, releaseId string) (api
 		Path(fmt.Sprintf("/api/releases/%s", releaseId)).
 		Do().Body(&b)
 	if err != nil {
-		return apistructs.ReleaseGetResponseData{}, fmt.Errorf(format.FormatErrMsg(
+		return apistructs.ReleaseGetResponseData{}, fmt.Errorf(utils.FormatErrMsg(
 			"get project detail", "failed to request ("+err.Error()+")", false))
 	}
 
 	if !response.IsOK() {
-		return apistructs.ReleaseGetResponseData{}, fmt.Errorf(format.FormatErrMsg("get project detail",
+		return apistructs.ReleaseGetResponseData{}, fmt.Errorf(utils.FormatErrMsg("get project detail",
 			fmt.Sprintf("failed to request, status-code: %d, content-type: %s, raw bod: %s",
 				response.StatusCode(), response.ResponseHeader("Content-Type"), b.String()), false))
 	}
 
 	if err := json.Unmarshal(b.Bytes(), &resp); err != nil {
-		return apistructs.ReleaseGetResponseData{}, fmt.Errorf(format.FormatErrMsg("get project detail",
+		return apistructs.ReleaseGetResponseData{}, fmt.Errorf(utils.FormatErrMsg("get project detail",
 			fmt.Sprintf("failed to unmarshal project detail response ("+err.Error()+")"), false))
 	}
 
 	if !resp.Success {
-		return apistructs.ReleaseGetResponseData{}, fmt.Errorf(format.FormatErrMsg("get project detail",
+		return apistructs.ReleaseGetResponseData{}, fmt.Errorf(utils.FormatErrMsg("get project detail",
 			fmt.Sprintf("failed to request, error code: %s, error message: %s",
 				resp.Error.Code, resp.Error.Msg), false))
 	}
@@ -71,23 +70,23 @@ func GetPagingReleases(ctx *command.Context, orgId, applicationId uint64, branch
 		Param("isVersion", strconv.FormatBool(isVersion))
 	response, err := req.Do().Body(&b)
 	if err != nil {
-		return apistructs.ReleaseListResponseData{}, fmt.Errorf(format.FormatErrMsg(
+		return apistructs.ReleaseListResponseData{}, fmt.Errorf(utils.FormatErrMsg(
 			"get release detail", "failed to request ("+err.Error()+")", false))
 	}
 
 	if !response.IsOK() {
-		return apistructs.ReleaseListResponseData{}, fmt.Errorf(format.FormatErrMsg("get release detail",
+		return apistructs.ReleaseListResponseData{}, fmt.Errorf(utils.FormatErrMsg("get release detail",
 			fmt.Sprintf("failed to request, status-code: %d, content-type: %s, raw bod: %s",
 				response.StatusCode(), response.ResponseHeader("Content-Type"), b.String()), false))
 	}
 
 	if err := json.Unmarshal(b.Bytes(), &resp); err != nil {
-		return apistructs.ReleaseListResponseData{}, fmt.Errorf(format.FormatErrMsg("get release detail",
+		return apistructs.ReleaseListResponseData{}, fmt.Errorf(utils.FormatErrMsg("get release detail",
 			fmt.Sprintf("failed to unmarshal runtime detail response ("+err.Error()+")"), false))
 	}
 
 	if !resp.Success {
-		return apistructs.ReleaseListResponseData{}, fmt.Errorf(format.FormatErrMsg("get release detail",
+		return apistructs.ReleaseListResponseData{}, fmt.Errorf(utils.FormatErrMsg("get release detail",
 			fmt.Sprintf("failed to request, error code: %s, error message: %s",
 				resp.Error.Code, resp.Error.Msg), false))
 	}
@@ -99,7 +98,7 @@ func ChooseRelease(ctx *command.Context, orgId, applicationId uint64, branch, ve
 	var release apistructs.ReleaseGetResponseData
 	num := 0
 	found := false
-	err := dicedir.PagingAll(func(pageNo, pageSize int) (bool, error) {
+	err := utils.PagingAll(func(pageNo, pageSize int) (bool, error) {
 		paging, err := GetPagingReleases(ctx, orgId, applicationId, branch, true, pageNo, pageSize)
 		if err != nil {
 			return false, err

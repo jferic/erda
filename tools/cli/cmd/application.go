@@ -26,7 +26,7 @@ import (
 	"github.com/erda-project/erda/pkg/terminal/table"
 	"github.com/erda-project/erda/tools/cli/command"
 	"github.com/erda-project/erda/tools/cli/common"
-	"github.com/erda-project/erda/tools/cli/dicedir"
+	"github.com/erda-project/erda/tools/cli/utils"
 )
 
 var APPLICATION = command.Command{
@@ -60,7 +60,7 @@ func GetApplications(ctx *command.Context, noHeaders bool, orgId, projectId uint
 	}
 
 	num := 0
-	err = dicedir.PagingView(
+	err = utils.PagingView(
 		func(pageNo, pageSize int) (bool, error) {
 			pagingApplication, err := common.GetPagingApplications(ctx, orgId, projectId, pageNo, pageSize)
 			if err != nil {

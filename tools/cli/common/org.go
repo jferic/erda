@@ -22,8 +22,7 @@ import (
 
 	"github.com/erda-project/erda/apistructs"
 	"github.com/erda-project/erda/tools/cli/command"
-	"github.com/erda-project/erda/tools/cli/dicedir"
-	"github.com/erda-project/erda/tools/cli/format"
+	"github.com/erda-project/erda/tools/cli/utils"
 )
 
 func GetOrgDetail(ctx *command.Context, orgIdorName string) (apistructs.OrgDTO, error) {
@@ -31,29 +30,29 @@ func GetOrgDetail(ctx *command.Context, orgIdorName string) (apistructs.OrgDTO, 
 	var b bytes.Buffer
 
 	if orgIdorName == "" {
-		return apistructs.OrgDTO{}, fmt.Errorf(format.FormatErrMsg("get organization detail",
+		return apistructs.OrgDTO{}, fmt.Errorf(utils.FormatErrMsg("get organization detail",
 			"invalid required parameter organization", false))
 	}
 
 	response, err := ctx.Get().Path(fmt.Sprintf("/api/orgs/%s", orgIdorName)).Do().Body(&b)
 	if err != nil {
-		return apistructs.OrgDTO{}, fmt.Errorf(format.FormatErrMsg(
+		return apistructs.OrgDTO{}, fmt.Errorf(utils.FormatErrMsg(
 			"get organization detail", "failed to request ("+err.Error()+")", false))
 	}
 
 	if !response.IsOK() {
-		return apistructs.OrgDTO{}, fmt.Errorf(format.FormatErrMsg("get organization detail",
+		return apistructs.OrgDTO{}, fmt.Errorf(utils.FormatErrMsg("get organization detail",
 			fmt.Sprintf("failed to request, status-code: %d, content-type: %s, raw bod: %s",
 				response.StatusCode(), response.ResponseHeader("Content-Type"), b.String()), false))
 	}
 
 	if err := json.Unmarshal(b.Bytes(), &resp); err != nil {
-		return apistructs.OrgDTO{}, fmt.Errorf(format.FormatErrMsg("get organization detail",
+		return apistructs.OrgDTO{}, fmt.Errorf(utils.FormatErrMsg("get organization detail",
 			fmt.Sprintf("failed to unmarshal organization detail response ("+err.Error()+")"), false))
 	}
 
 	if !resp.Success {
-		return apistructs.OrgDTO{}, fmt.Errorf(format.FormatErrMsg("get organization detail",
+		return apistructs.OrgDTO{}, fmt.Errorf(utils.FormatErrMsg("get organization detail",
 			fmt.Sprintf("failed to request, error code: %s, error message: %s",
 				resp.Error.Code, resp.Error.Msg), false))
 	}
@@ -63,7 +62,7 @@ func GetOrgDetail(ctx *command.Context, orgIdorName string) (apistructs.OrgDTO, 
 
 func GetOrganizations(ctx *command.Context) ([]apistructs.OrgDTO, error) {
 	var orgs []apistructs.OrgDTO
-	err := dicedir.PagingAll(func(pageNo, pageSize int) (bool, error) {
+	err := utils.PagingAll(func(pageNo, pageSize int) (bool, error) {
 
 		page, err := GetPagingOrganizations(ctx, pageNo, pageSize)
 		if err != nil {
@@ -93,22 +92,22 @@ func GetPagingOrganizations(ctx *command.Context, pageNo, pageSize int) (apistru
 		Do().Body(&b)
 	if err != nil {
 		return apistructs.PagingOrgDTO{}, fmt.Errorf(
-			format.FormatErrMsg("orgs", "failed to request ("+err.Error()+")", false))
+			utils.FormatErrMsg("orgs", "failed to request ("+err.Error()+")", false))
 	}
 
 	if !response.IsOK() {
-		return apistructs.PagingOrgDTO{}, fmt.Errorf(format.FormatErrMsg("orgs",
+		return apistructs.PagingOrgDTO{}, fmt.Errorf(utils.FormatErrMsg("orgs",
 			fmt.Sprintf("failed to request, status-code: %d, content-type: %s, raw bod: %s",
 				response.StatusCode(), response.ResponseHeader("Content-Type"), b.String()), false))
 	}
 
 	if err := json.Unmarshal(b.Bytes(), &resp); err != nil {
-		return apistructs.PagingOrgDTO{}, fmt.Errorf(format.FormatErrMsg("orgs",
+		return apistructs.PagingOrgDTO{}, fmt.Errorf(utils.FormatErrMsg("orgs",
 			fmt.Sprintf("failed to unmarshal organizations list response ("+err.Error()+")"), false))
 	}
 
 	if !resp.Success {
-		return apistructs.PagingOrgDTO{}, fmt.Errorf(format.FormatErrMsg("orgs",
+		return apistructs.PagingOrgDTO{}, fmt.Errorf(utils.FormatErrMsg("orgs",
 			fmt.Sprintf("error code(%s), error message(%s)", resp.Error.Code, resp.Error.Msg), false))
 	}
 

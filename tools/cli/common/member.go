@@ -22,8 +22,7 @@ import (
 
 	"github.com/erda-project/erda/apistructs"
 	"github.com/erda-project/erda/tools/cli/command"
-	"github.com/erda-project/erda/tools/cli/dicedir"
-	"github.com/erda-project/erda/tools/cli/format"
+	"github.com/erda-project/erda/tools/cli/utils"
 )
 
 //func GetOrgDetail(ctx *command.Context, orgIdorName string) (apistructs.OrgFetchResponse, error) {
@@ -63,7 +62,7 @@ import (
 
 func GetMembers(ctx *command.Context, scopeType apistructs.ScopeType, scopeId uint64, roles []string) ([]apistructs.Member, error) {
 	var orgs []apistructs.Member
-	err := dicedir.PagingAll(func(pageNo, pageSize int) (bool, error) {
+	err := utils.PagingAll(func(pageNo, pageSize int) (bool, error) {
 
 		page, err := GetPagingMembers(ctx, scopeType, scopeId, roles, pageNo, pageSize)
 		if err != nil {
@@ -98,22 +97,22 @@ func GetPagingMembers(ctx *command.Context, scopeType apistructs.ScopeType, scop
 	response, err := req.Do().Body(&b)
 	if err != nil {
 		return apistructs.MemberList{}, fmt.Errorf(
-			format.FormatErrMsg("members", "failed to request ("+err.Error()+")", false))
+			utils.FormatErrMsg("members", "failed to request ("+err.Error()+")", false))
 	}
 
 	if !response.IsOK() {
-		return apistructs.MemberList{}, fmt.Errorf(format.FormatErrMsg("members",
+		return apistructs.MemberList{}, fmt.Errorf(utils.FormatErrMsg("members",
 			fmt.Sprintf("failed to request, status-code: %d, content-type: %s, raw bod: %s",
 				response.StatusCode(), response.ResponseHeader("Content-Type"), b.String()), false))
 	}
 
 	if err := json.Unmarshal(b.Bytes(), &resp); err != nil {
-		return apistructs.MemberList{}, fmt.Errorf(format.FormatErrMsg("members",
+		return apistructs.MemberList{}, fmt.Errorf(utils.FormatErrMsg("members",
 			fmt.Sprintf("failed to unmarshal organizations list response ("+err.Error()+")"), false))
 	}
 
 	if !resp.Success {
-		return apistructs.MemberList{}, fmt.Errorf(format.FormatErrMsg("members",
+		return apistructs.MemberList{}, fmt.Errorf(utils.FormatErrMsg("members",
 			fmt.Sprintf("error code(%s), error message(%s)", resp.Error.Code, resp.Error.Msg), false))
 	}
 

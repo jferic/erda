@@ -20,7 +20,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/erda-project/erda/tools/cli/dicedir"
+	"github.com/erda-project/erda/tools/cli/utils"
 )
 
 const (
@@ -60,7 +60,7 @@ type UserInfo struct {
 // GetSessionInfos fetch sessions
 func GetSessionInfos() (map[string]StatusInfo, error) {
 	// check directory ~/.erda.d if exist
-	diceDir, err := dicedir.FindGlobalErdaDir()
+	diceDir, err := utils.FindGlobalErdaDir()
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +68,7 @@ func GetSessionInfos() (map[string]StatusInfo, error) {
 	// load file ~/.erda.d/sessions
 	if _, err := os.Stat(filepath.Join(diceDir, sessionFile)); err != nil {
 		if os.IsNotExist(err) {
-			return nil, dicedir.NotExist
+			return nil, utils.NotExist
 		}
 		return nil, err
 	}
@@ -87,12 +87,12 @@ func GetSessionInfos() (map[string]StatusInfo, error) {
 
 // StoreSessionInfo write session info to file ~/.erda.d/sessions
 func StoreSessionInfo(host string, stat StatusInfo) error {
-	erdaDir, err := dicedir.FindGlobalErdaDir()
+	erdaDir, err := utils.FindGlobalErdaDir()
 	if err != nil {
-		if err != dicedir.NotExist {
+		if err != utils.NotExist {
 			return err
 		}
-		erdaDir, err = dicedir.CreateGlobalErdaDir()
+		erdaDir, err = utils.CreateGlobalErdaDir()
 		if err != nil {
 			return err
 		}

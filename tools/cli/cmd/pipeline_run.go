@@ -23,7 +23,7 @@ import (
 	"github.com/erda-project/erda/apistructs"
 	"github.com/erda-project/erda/tools/cli/command"
 	"github.com/erda-project/erda/tools/cli/common"
-	"github.com/erda-project/erda/tools/cli/dicedir"
+	"github.com/erda-project/erda/tools/cli/utils"
 )
 
 // BUILD command
@@ -34,7 +34,7 @@ var PIPELINERUN = command.Command{
 	Example:    "$ erda-cli pipeline run -f <path-to/pipeline.yml>",
 	Flags: []command.Flag{
 		command.StringFlag{Short: "", Name: "branch", Doc: "branch to create pipeline, default is current branch", DefaultValue: ""},
-		command.StringFlag{Short: "f", Name: "filename", Doc: "filename for 'pipeline.yml'", DefaultValue: path.Join(dicedir.ProjectPipelineDir, "pipeline.yml")},
+		command.StringFlag{Short: "f", Name: "filename", Doc: "filename for 'pipeline.yml'", DefaultValue: path.Join(utils.ProjectPipelineDir, "pipeline.yml")},
 	},
 	Run: PipelineRun,
 }
@@ -48,7 +48,7 @@ func PipelineRun(ctx *command.Context, branch, filename string) error {
 		return err
 	}
 
-	dirty, err := dicedir.IsWorkspaceDirty()
+	dirty, err := utils.IsWorkspaceDirty()
 	if err != nil {
 		return err
 	}
@@ -57,7 +57,7 @@ func PipelineRun(ctx *command.Context, branch, filename string) error {
 	}
 
 	if branch == "" {
-		b, err := dicedir.GetWorkspaceBranch()
+		b, err := utils.GetWorkspaceBranch()
 		if err != nil {
 			return err
 		}
@@ -65,7 +65,7 @@ func PipelineRun(ctx *command.Context, branch, filename string) error {
 	}
 
 	// fetch appID
-	info, err := dicedir.GetWorkspaceInfo(command.Remote)
+	info, err := utils.GetWorkspaceInfo(command.Remote)
 	if err != nil {
 		return err
 	}

@@ -22,7 +22,7 @@ import (
 	"github.com/erda-project/erda/pkg/terminal/table"
 	"github.com/erda-project/erda/tools/cli/command"
 	"github.com/erda-project/erda/tools/cli/common"
-	"github.com/erda-project/erda/tools/cli/dicedir"
+	"github.com/erda-project/erda/tools/cli/utils"
 )
 
 var APPLICATIONMEMBER = command.Command{
@@ -65,7 +65,7 @@ func ApplicationMember(ctx *command.Context, noHeaders bool, orgId, projectId, a
 	}
 
 	num := 0
-	dicedir.PagingView(func(pageNo, pageSize int) (bool, error) {
+	utils.PagingView(func(pageNo, pageSize int) (bool, error) {
 		pagingMembers, err := common.GetPagingMembers(ctx, apistructs.AppScope, applicationId, roles, pageNo, pageSize)
 		if err != nil {
 			fmt.Println(err)

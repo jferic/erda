@@ -23,7 +23,7 @@ import (
 
 	"github.com/erda-project/erda/tools/cli/command"
 	"github.com/erda-project/erda/tools/cli/common"
-	"github.com/erda-project/erda/tools/cli/dicedir"
+	"github.com/erda-project/erda/tools/cli/utils"
 )
 
 var PIPELINEINIT = command.Command{
@@ -42,7 +42,7 @@ var PIPELINEINIT = command.Command{
 func PipelineInit(ctx *command.Context, ymlfile string) error {
 	var filepath string
 	if ymlfile == "" {
-		filepath = path.Join(dicedir.ProjectPipelineDir, "pipeline.yml")
+		filepath = path.Join(utils.ProjectPipelineDir, "pipeline.yml")
 	} else {
 		filepath = ymlfile
 	}
@@ -60,7 +60,7 @@ func PipelineInit(ctx *command.Context, ymlfile string) error {
 		return err
 	}
 
-	err = os.MkdirAll(dicedir.ProjectPipelineDir, 0755)
+	err = os.MkdirAll(utils.ProjectPipelineDir, 0755)
 	if err != nil {
 		return err
 	}

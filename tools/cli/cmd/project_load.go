@@ -26,7 +26,7 @@ import (
 	"github.com/erda-project/erda/apistructs"
 	"github.com/erda-project/erda/tools/cli/command"
 	"github.com/erda-project/erda/tools/cli/common"
-	"github.com/erda-project/erda/tools/cli/dicedir"
+	"github.com/erda-project/erda/tools/cli/utils"
 )
 
 var PROJECTLOAD = command.Command{
@@ -131,7 +131,7 @@ func ProjectLoad(ctx *command.Context, orgId, projectId uint64, org, project, co
 		rDeployments = append(rDeployments, deployment)
 	}
 
-	var taskRunners []dicedir.TaskRunner
+	var taskRunners []utils.TaskRunner
 	for _, deployment := range rDeployments {
 		taskRunners = append(taskRunners, func() bool {
 			status, err := common.GetDeploymentStatus(ctx, deployment.PipelineID)
@@ -141,7 +141,7 @@ func ProjectLoad(ctx *command.Context, orgId, projectId uint64, org, project, co
 			return false
 		})
 	}
-	err = dicedir.DoTaskListWithTimeout(time.Duration(waitTime)*time.Minute, taskRunners)
+	err = utils.DoTaskListWithTimeout(time.Duration(waitTime)*time.Minute, taskRunners)
 	if err != nil {
 		return err
 	}

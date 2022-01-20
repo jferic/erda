@@ -20,7 +20,7 @@ import (
 	"github.com/erda-project/erda/pkg/footnote"
 	"github.com/erda-project/erda/pkg/parser/diceyml"
 	"github.com/erda-project/erda/tools/cli/command"
-	"github.com/erda-project/erda/tools/cli/format"
+	"github.com/erda-project/erda/tools/cli/utils"
 )
 
 var ERDACHECK = command.Command{
@@ -39,7 +39,7 @@ func ErdaCheck(ctx *command.Context, ymlPath string) error {
 	var yml []byte
 	var err error
 	if ymlPath != "" {
-		yml, err = format.ReadYml(ymlPath)
+		yml, err = utils.ReadYml(ymlPath)
 		if err != nil {
 			return err
 		}
@@ -48,7 +48,7 @@ func ErdaCheck(ctx *command.Context, ymlPath string) error {
 		if err != nil {
 			return err
 		}
-		yml, err = format.ReadYml(ymlPath)
+		yml, err = utils.ReadYml(ymlPath)
 		if err != nil {
 			return err
 		}

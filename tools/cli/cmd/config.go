@@ -22,7 +22,7 @@ import (
 
 	"github.com/erda-project/erda/pkg/terminal/table"
 	"github.com/erda-project/erda/tools/cli/command"
-	"github.com/erda-project/erda/tools/cli/dicedir"
+	"github.com/erda-project/erda/tools/cli/utils"
 )
 
 var CONFIG = command.Command{
@@ -38,7 +38,7 @@ func ConfigRead(ctx *command.Context) error {
 
 func configOps(ops string, noHeaders bool) error {
 	_, conf, err := command.GetConfig()
-	if err == dicedir.NotExist {
+	if err == utils.NotExist {
 		return errors.New("Please use 'erda-cli config-set' command to set configurations first")
 	}
 	if err != nil {

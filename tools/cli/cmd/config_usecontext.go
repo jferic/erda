@@ -20,7 +20,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/erda-project/erda/tools/cli/command"
-	"github.com/erda-project/erda/tools/cli/dicedir"
+	"github.com/erda-project/erda/tools/cli/utils"
 )
 
 var CONFIGW = command.Command{
@@ -46,7 +46,7 @@ func ConfigOpsWUseCtx(ctx *command.Context, name string) error {
 
 func configOpsW(ops, name, server, org, platform string) error {
 	file, conf, err := command.GetConfig()
-	if err != nil && err != dicedir.NotExist {
+	if err != nil && err != utils.NotExist {
 		return err
 	}
 	switch ops {
