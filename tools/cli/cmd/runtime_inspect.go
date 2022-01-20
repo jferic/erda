@@ -22,8 +22,7 @@ import (
 	"github.com/erda-project/erda/apistructs"
 	"github.com/erda-project/erda/tools/cli/command"
 	"github.com/erda-project/erda/tools/cli/common"
-	"github.com/erda-project/erda/tools/cli/format"
-	"github.com/erda-project/erda/tools/cli/prettyjson"
+	"github.com/erda-project/erda/tools/cli/utils"
 )
 
 var RUNTIMEINSPECT = command.Command{
@@ -61,9 +60,9 @@ func RuntimeInspect(ctx *command.Context, org string, orgId, applicationId uint6
 		return err
 	}
 
-	s, err := prettyjson.Marshal(resp.Data)
+	s, err := utils.Marshal(resp.Data)
 	if err != nil {
-		return fmt.Errorf(format.FormatErrMsg("runtime inspect",
+		return fmt.Errorf(utils.FormatErrMsg("runtime inspect",
 			"failed to prettyjson marshal runtime data ("+err.Error()+")", false))
 	}
 

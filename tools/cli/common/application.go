@@ -24,8 +24,7 @@ import (
 
 	"github.com/erda-project/erda/apistructs"
 	"github.com/erda-project/erda/tools/cli/command"
-	"github.com/erda-project/erda/tools/cli/dicedir"
-	"github.com/erda-project/erda/tools/cli/format"
+	"github.com/erda-project/erda/tools/cli/utils"
 )
 
 func GetApplicationDetail(ctx *command.Context, orgId, projectId, applicationId uint64) (
@@ -39,23 +38,23 @@ func GetApplicationDetail(ctx *command.Context, orgId, projectId, applicationId 
 		Path(fmt.Sprintf("/api/applications/%d?projectId=%d", applicationId, projectId)).
 		Do().Body(&b)
 	if err != nil {
-		return apistructs.ApplicationDTO{}, fmt.Errorf(format.FormatErrMsg(
+		return apistructs.ApplicationDTO{}, fmt.Errorf(utils.FormatErrMsg(
 			"get application detail", "failed to request ("+err.Error()+")", false))
 	}
 
 	if !response.IsOK() {
-		return apistructs.ApplicationDTO{}, fmt.Errorf(format.FormatErrMsg("get application detail",
+		return apistructs.ApplicationDTO{}, fmt.Errorf(utils.FormatErrMsg("get application detail",
 			fmt.Sprintf("failed to request, status-code: %d, content-type: %s, raw bod: %s",
 				response.StatusCode(), response.ResponseHeader("Content-Type"), b.String()), false))
 	}
 
 	if err := json.Unmarshal(b.Bytes(), &resp); err != nil {
-		return apistructs.ApplicationDTO{}, fmt.Errorf(format.FormatErrMsg("get application detail",
+		return apistructs.ApplicationDTO{}, fmt.Errorf(utils.FormatErrMsg("get application detail",
 			fmt.Sprintf("failed to unmarshal application detail response ("+err.Error()+")"), false))
 	}
 
 	if !resp.Success {
-		return apistructs.ApplicationDTO{}, fmt.Errorf(format.FormatErrMsg("get application detail",
+		return apistructs.ApplicationDTO{}, fmt.Errorf(utils.FormatErrMsg("get application detail",
 			fmt.Sprintf("failed to request, error code: %s, error message: %s",
 				resp.Error.Code, resp.Error.Msg), false))
 	}
@@ -79,7 +78,7 @@ func GetApplicationIdByName(ctx *command.Context, orgId, projectId uint64, appli
 
 func GetApplications(ctx *command.Context, orgId, projectId uint64) ([]apistructs.ApplicationDTO, error) {
 	var apps []apistructs.ApplicationDTO
-	err := dicedir.PagingAll(func(pageNo, pageSize int) (bool, error) {
+	err := utils.PagingAll(func(pageNo, pageSize int) (bool, error) {
 		page, err := GetPagingApplications(ctx, orgId, projectId, pageNo, pageSize)
 		if err != nil {
 			return false, err
@@ -105,23 +104,23 @@ func GetPagingApplications(ctx *command.Context, orgId, projectId uint64, pageNo
 		Do().Body(&b)
 	if err != nil {
 		return apistructs.ApplicationListResponseData{}, fmt.Errorf(
-			format.FormatErrMsg("list", "failed to request ("+err.Error()+")", false))
+			utils.FormatErrMsg("list", "failed to request ("+err.Error()+")", false))
 	}
 
 	if !response.IsOK() {
-		return apistructs.ApplicationListResponseData{}, fmt.Errorf(format.FormatErrMsg("list",
+		return apistructs.ApplicationListResponseData{}, fmt.Errorf(utils.FormatErrMsg("list",
 			fmt.Sprintf("failed to request, status-code: %d, content-type: %s, raw bod: %s",
 				response.StatusCode(), response.ResponseHeader("Content-Type"), b.String()), false))
 	}
 
 	if err := json.Unmarshal(b.Bytes(), &resp); err != nil {
-		return apistructs.ApplicationListResponseData{}, fmt.Errorf(format.FormatErrMsg("list",
+		return apistructs.ApplicationListResponseData{}, fmt.Errorf(utils.FormatErrMsg("list",
 			fmt.Sprintf("failed to unmarshal application list response ("+err.Error()+")"), false))
 	}
 
 	if !resp.Success {
 		return apistructs.ApplicationListResponseData{}, fmt.Errorf(
-			format.FormatErrMsg("list",
+			utils.FormatErrMsg("list",
 				fmt.Sprintf("failed to request, error code: %s, error message: %s",
 					resp.Error.Code, resp.Error.Msg), false))
 	}
@@ -137,22 +136,22 @@ func DeleteApplication(ctx *command.Context, applicationId uint64) error {
 		Path(fmt.Sprintf("/api/applications/%d", applicationId)).Do().Body(&b)
 	if err != nil {
 		return fmt.Errorf(
-			format.FormatErrMsg("delete", "failed to request ("+err.Error()+")", false))
+			utils.FormatErrMsg("delete", "failed to request ("+err.Error()+")", false))
 	}
 
 	if !response.IsOK() {
-		return fmt.Errorf(format.FormatErrMsg("delete",
+		return fmt.Errorf(utils.FormatErrMsg("delete",
 			fmt.Sprintf("failed to request, status-code: %d, content-type: %s, raw bod: %s",
 				response.StatusCode(), response.ResponseHeader("Content-Type"), b.String()), false))
 	}
 
 	if err := json.Unmarshal(b.Bytes(), &resp); err != nil {
-		return fmt.Errorf(format.FormatErrMsg("delete",
+		return fmt.Errorf(utils.FormatErrMsg("delete",
 			fmt.Sprintf("failed to unmarshal releases remove application response ("+err.Error()+")"), false))
 	}
 
 	if !resp.Success {
-		return fmt.Errorf(format.FormatErrMsg("delete",
+		return fmt.Errorf(utils.FormatErrMsg("delete",
 			fmt.Sprintf("failed to request, error code: %s, error message: %s",
 				resp.Error.Code, resp.Error.Msg), false))
 	}

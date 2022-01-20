@@ -26,9 +26,7 @@ import (
 	"github.com/erda-project/erda/apistructs"
 	"github.com/erda-project/erda/pkg/parser/diceyml"
 	"github.com/erda-project/erda/tools/cli/command"
-	"github.com/erda-project/erda/tools/cli/dicedir"
-	"github.com/erda-project/erda/tools/cli/format"
-	"github.com/erda-project/erda/tools/cli/httputils"
+	"github.com/erda-project/erda/tools/cli/utils"
 )
 
 func GetAddonResp(ctx *command.Context, orgId uint64, addonId string) (
@@ -39,7 +37,7 @@ func GetAddonResp(ctx *command.Context, orgId uint64, addonId string) (
 		Path(fmt.Sprintf("/api/addons/%s", addonId)).
 		Do().Body(&b)
 	if err != nil {
-		return nil, b, fmt.Errorf(format.FormatErrMsg(
+		return nil, b, fmt.Errorf(utils.FormatErrMsg(
 			"get addon detail", "failed to request ("+err.Error()+")", false))
 	}
 
@@ -57,18 +55,18 @@ func GetAddonDetail(ctx *command.Context, orgId uint64, addonId string) (
 	}
 
 	if !response.IsOK() {
-		return apistructs.AddonFetchResponseData{}, fmt.Errorf(format.FormatErrMsg("get addon detail",
+		return apistructs.AddonFetchResponseData{}, fmt.Errorf(utils.FormatErrMsg("get addon detail",
 			fmt.Sprintf("failed to request, status-code: %d, content-type: %s, raw bod: %s",
 				response.StatusCode(), response.ResponseHeader("Content-Type"), b.String()), false))
 	}
 
 	if err := json.Unmarshal(b.Bytes(), &resp); err != nil {
-		return apistructs.AddonFetchResponseData{}, fmt.Errorf(format.FormatErrMsg("get addon detail",
+		return apistructs.AddonFetchResponseData{}, fmt.Errorf(utils.FormatErrMsg("get addon detail",
 			fmt.Sprintf("failed to unmarshal addon detail response ("+err.Error()+")"), false))
 	}
 
 	if !resp.Success {
-		return apistructs.AddonFetchResponseData{}, fmt.Errorf(format.FormatErrMsg("get addon detail",
+		return apistructs.AddonFetchResponseData{}, fmt.Errorf(utils.FormatErrMsg("get addon detail",
 			fmt.Sprintf("failed to request, error code: %s, error message: %s",
 				resp.Error.Code, resp.Error.Msg), false))
 	}
@@ -87,23 +85,23 @@ func GetAddonList(ctx *command.Context, orgId, projectId uint64) (apistructs.Add
 		Do().Body(&b)
 	if err != nil {
 		return apistructs.AddonListResponse{}, fmt.Errorf(
-			format.FormatErrMsg("list", "failed to request ("+err.Error()+")", false))
+			utils.FormatErrMsg("list", "failed to request ("+err.Error()+")", false))
 	}
 
 	if !response.IsOK() {
-		return apistructs.AddonListResponse{}, fmt.Errorf(format.FormatErrMsg("list",
+		return apistructs.AddonListResponse{}, fmt.Errorf(utils.FormatErrMsg("list",
 			fmt.Sprintf("failed to request, status-code: %d, content-type: %s, raw bod: %s",
 				response.StatusCode(), response.ResponseHeader("Content-Type"), b.String()), false))
 	}
 
 	if err := json.Unmarshal(b.Bytes(), &resp); err != nil {
-		return apistructs.AddonListResponse{}, fmt.Errorf(format.FormatErrMsg("list",
+		return apistructs.AddonListResponse{}, fmt.Errorf(utils.FormatErrMsg("list",
 			fmt.Sprintf("failed to unmarshal application list response ("+err.Error()+")"), false))
 	}
 
 	if !resp.Success {
 		return apistructs.AddonListResponse{}, fmt.Errorf(
-			format.FormatErrMsg("list",
+			utils.FormatErrMsg("list",
 				fmt.Sprintf("failed to request, error code: %s, error message: %s",
 					resp.Error.Code, resp.Error.Msg), false))
 	}
@@ -115,14 +113,14 @@ func DeleteAddon(ctx *command.Context, orgId uint64, addonId string) error {
 	r := ctx.Delete().
 		Header("Org-ID", strconv.FormatUint(orgId, 10)).
 		Path(fmt.Sprintf("/api/addons/%s", addonId))
-	resp, err := httputils.DoResp(r)
+	resp, err := utils.DoResp(r)
 	if err != nil {
 		return fmt.Errorf(
-			format.FormatErrMsg("remove", "failed to remove addon, error: "+err.Error(), false))
+			utils.FormatErrMsg("remove", "failed to remove addon, error: "+err.Error(), false))
 	}
 	if err := resp.ParseData(nil); err != nil {
 		return fmt.Errorf(
-			format.FormatErrMsg(
+			utils.FormatErrMsg(
 				"remove", "failed to parse remove addon response, error: "+err.Error(), false))
 	}
 
@@ -147,28 +145,28 @@ func CreateErdaAddon(ctx *command.Context, orgId, projectId uint64, clusterName,
 		Do().Body(&b)
 	if err != nil {
 		return fmt.Errorf(
-			format.FormatErrMsg("create", "failed to request ("+err.Error()+")", false))
+			utils.FormatErrMsg("create", "failed to request ("+err.Error()+")", false))
 	}
 
 	if !resp.IsOK() {
-		return fmt.Errorf(format.FormatErrMsg("create",
+		return fmt.Errorf(utils.FormatErrMsg("create",
 			fmt.Sprintf("failed to request, status-code: %d, content-type: %s, raw bod: %s",
 				resp.StatusCode(), resp.ResponseHeader("Content-Type"), b.String()), false))
 	}
 
 	if err := json.Unmarshal(b.Bytes(), &response); err != nil {
-		return fmt.Errorf(format.FormatErrMsg("create",
+		return fmt.Errorf(utils.FormatErrMsg("create",
 			fmt.Sprintf("failed to unmarshal application create response ("+err.Error()+")"), false))
 	}
 
 	if !response.Success {
-		return fmt.Errorf(format.FormatErrMsg("create",
+		return fmt.Errorf(utils.FormatErrMsg("create",
 			fmt.Sprintf("failed to request, error code: %s, error message: %s",
 				response.Error.Code, response.Error.Msg), false))
 	}
 
 	aId := response.Data
-	err = dicedir.DoTaskWithTimeout(func() (bool, error) {
+	err = utils.DoTaskWithTimeout(func() (bool, error) {
 		s, err := GetAddonDetail(ctx, orgId, aId)
 		if err == nil && s.Status == "ATTACHED" {
 			return true, nil
@@ -199,22 +197,22 @@ func CreateCustomAddon(ctx *command.Context, orgId, projectId uint64, workspace,
 		Do().Body(&b)
 	if err != nil {
 		return fmt.Errorf(
-			format.FormatErrMsg("create", "failed to request ("+err.Error()+")", false))
+			utils.FormatErrMsg("create", "failed to request ("+err.Error()+")", false))
 	}
 
 	if !resp.IsOK() {
-		return fmt.Errorf(format.FormatErrMsg("create",
+		return fmt.Errorf(utils.FormatErrMsg("create",
 			fmt.Sprintf("failed to request, status-code: %d, content-type: %s, raw bod: %s",
 				resp.StatusCode(), resp.ResponseHeader("Content-Type"), b.String()), false))
 	}
 
 	if err := json.Unmarshal(b.Bytes(), &response); err != nil {
-		return fmt.Errorf(format.FormatErrMsg("create",
+		return fmt.Errorf(utils.FormatErrMsg("create",
 			fmt.Sprintf("failed to unmarshal application create response ("+err.Error()+")"), false))
 	}
 
 	if !response.Success {
-		return fmt.Errorf(format.FormatErrMsg("create",
+		return fmt.Errorf(utils.FormatErrMsg("create",
 			fmt.Sprintf("failed to request, error code: %s, error message: %s",
 				response.Error.Code, response.Error.Msg), false))
 	}

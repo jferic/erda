@@ -22,8 +22,7 @@ import (
 	"github.com/erda-project/erda/pkg/terminal/color_str"
 	"github.com/erda-project/erda/tools/cli/command"
 	"github.com/erda-project/erda/tools/cli/common"
-	"github.com/erda-project/erda/tools/cli/dicedir"
-	"github.com/erda-project/erda/tools/cli/format"
+	"github.com/erda-project/erda/tools/cli/utils"
 )
 
 var ORGANIZATIONSSWITCH = command.Command{
@@ -51,7 +50,7 @@ func OrganizationsSwitch(ctx *command.Context, org string) error {
 	ctx.CurrentOrg.Desc = orgResp.Desc
 
 	f, conf, err := command.GetConfig()
-	if err == dicedir.NotExist {
+	if err == utils.NotExist {
 		return errors.New("Please use 'erda-cli config-set' command to set configurations first")
 	} else if err != nil {
 		return err
@@ -73,7 +72,7 @@ func OrganizationsSwitch(ctx *command.Context, org string) error {
 
 	if err := command.SetConfig(f, conf); err != nil {
 		return fmt.Errorf(
-			format.FormatErrMsg(
+			utils.FormatErrMsg(
 				"org switch", "failed to switch ("+err.Error()+")", false))
 	}
 

@@ -23,7 +23,7 @@ import (
 	"github.com/erda-project/erda/apistructs"
 	"github.com/erda-project/erda/tools/cli/command"
 	"github.com/erda-project/erda/tools/cli/common"
-	"github.com/erda-project/erda/tools/cli/dicedir"
+	"github.com/erda-project/erda/tools/cli/utils"
 )
 
 var PROJECTCLEAR = command.Command{
@@ -105,14 +105,14 @@ func clearProject(ctx *command.Context, orgId, projectId uint64, workspace strin
 		}
 	}
 	// Check Clear Runtimes Done
-	var checkRuntimesRunners []dicedir.TaskRunner
+	var checkRuntimesRunners []utils.TaskRunner
 	for _, aId := range appList {
 		appId := aId
 		checkRuntimesRunners = append(checkRuntimesRunners, func() bool {
 			return checkApplication(ctx, orgId, appId, workspace)
 		})
 	}
-	err = dicedir.DoTaskListWithTimeout(time.Duration(waitRuntime)*time.Minute, checkRuntimesRunners)
+	err = utils.DoTaskListWithTimeout(time.Duration(waitRuntime)*time.Minute, checkRuntimesRunners)
 	if err != nil {
 		return err
 	}
@@ -133,7 +133,7 @@ func clearProject(ctx *command.Context, orgId, projectId uint64, workspace strin
 		addonList = append(addonList, a.ID)
 	}
 
-	var deleteAddonRunners []dicedir.TaskRunner
+	var deleteAddonRunners []utils.TaskRunner
 	for _, aId := range addonList {
 		// make local appId
 		appId := aId
@@ -146,13 +146,13 @@ func clearProject(ctx *command.Context, orgId, projectId uint64, workspace strin
 				return false
 			})
 	}
-	err = dicedir.DoTaskListWithTimeout(3*time.Minute, deleteAddonRunners)
+	err = utils.DoTaskListWithTimeout(3*time.Minute, deleteAddonRunners)
 	if err != nil {
 		return err
 	}
 
 	// Check Clear Addons Done
-	err = dicedir.DoTaskWithTimeout(func() (bool, error) {
+	err = utils.DoTaskWithTimeout(func() (bool, error) {
 		var as []apistructs.AddonFetchResponseData
 		resp, err = common.GetAddonList(ctx, orgId, projectId)
 		if err != nil {

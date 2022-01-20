@@ -19,8 +19,7 @@ import (
 
 	"github.com/erda-project/erda/tools/cli/command"
 	"github.com/erda-project/erda/tools/cli/common"
-	"github.com/erda-project/erda/tools/cli/format"
-	"github.com/erda-project/erda/tools/cli/prettyjson"
+	"github.com/erda-project/erda/tools/cli/utils"
 )
 
 var ADDONINSPECT = command.Command{
@@ -48,9 +47,9 @@ func AddonInspect(ctx *command.Context, orgId uint64, org, addonId string) error
 		return err
 	}
 
-	s, err := prettyjson.Marshal(resp)
+	s, err := utils.Marshal(resp)
 	if err != nil {
-		return fmt.Errorf(format.FormatErrMsg("application inspect",
+		return fmt.Errorf(utils.FormatErrMsg("application inspect",
 			"failed to prettyjson marshal application data ("+err.Error()+")", false))
 	}
 	fmt.Println(string(s))

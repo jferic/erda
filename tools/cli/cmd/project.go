@@ -26,7 +26,7 @@ import (
 	"github.com/erda-project/erda/pkg/terminal/table"
 	"github.com/erda-project/erda/tools/cli/command"
 	"github.com/erda-project/erda/tools/cli/common"
-	"github.com/erda-project/erda/tools/cli/dicedir"
+	"github.com/erda-project/erda/tools/cli/utils"
 )
 
 var PROJECT = command.Command{
@@ -51,7 +51,7 @@ func GetProjects(ctx *command.Context, noHeaders bool, orgId uint64, org string,
 	}
 
 	num := 0
-	err = dicedir.PagingView(func(pageNo, pageSize int) (bool, error) {
+	err = utils.PagingView(func(pageNo, pageSize int) (bool, error) {
 		pagingProject, err := common.GetPagingProjects(ctx, orgId, pageNo, pageSize)
 		if err != nil {
 			return false, err

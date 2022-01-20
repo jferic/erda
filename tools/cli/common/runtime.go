@@ -20,11 +20,11 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/erda-project/erda/tools/cli/utils"
+
 	"github.com/erda-project/erda/apistructs"
 	"github.com/erda-project/erda/pkg/http/httpclient"
 	"github.com/erda-project/erda/tools/cli/command"
-	"github.com/erda-project/erda/tools/cli/format"
-	"github.com/erda-project/erda/tools/cli/httputils"
 )
 
 func GetRuntimeDetail(ctx *command.Context, orgId, applicationId uint64, workspace, runtime string) (
@@ -35,7 +35,7 @@ func GetRuntimeDetail(ctx *command.Context, orgId, applicationId uint64, workspa
 
 	if runtime == "" {
 		return apistructs.RuntimeInspectResponse{}, fmt.Errorf(
-			format.FormatErrMsg("releases inspect", "missing required parameter runtime", false))
+			utils.FormatErrMsg("releases inspect", "missing required parameter runtime", false))
 	}
 
 	request = ctx.Get().Path(fmt.Sprintf("/api/runtimes/%s", runtime)).
@@ -45,23 +45,23 @@ func GetRuntimeDetail(ctx *command.Context, orgId, applicationId uint64, workspa
 
 	response, err := request.Do().Body(&b)
 	if err != nil {
-		return apistructs.RuntimeInspectResponse{}, fmt.Errorf(format.FormatErrMsg(
+		return apistructs.RuntimeInspectResponse{}, fmt.Errorf(utils.FormatErrMsg(
 			"get runtime detail", "failed to request ("+err.Error()+")", false))
 	}
 
 	if !response.IsOK() {
-		return apistructs.RuntimeInspectResponse{}, fmt.Errorf(format.FormatErrMsg("get runtime detail",
+		return apistructs.RuntimeInspectResponse{}, fmt.Errorf(utils.FormatErrMsg("get runtime detail",
 			fmt.Sprintf("failed to request, status-code: %d, content-type: %s, raw bod: %s",
 				response.StatusCode(), response.ResponseHeader("Content-Type"), b.String()), false))
 	}
 
 	if err := json.Unmarshal(b.Bytes(), &resp); err != nil {
-		return apistructs.RuntimeInspectResponse{}, fmt.Errorf(format.FormatErrMsg("get runtime detail",
+		return apistructs.RuntimeInspectResponse{}, fmt.Errorf(utils.FormatErrMsg("get runtime detail",
 			fmt.Sprintf("failed to unmarshal runtime detail response ("+err.Error()+")"), false))
 	}
 
 	if !resp.Success {
-		return apistructs.RuntimeInspectResponse{}, fmt.Errorf(format.FormatErrMsg("get runtime detail",
+		return apistructs.RuntimeInspectResponse{}, fmt.Errorf(utils.FormatErrMsg("get runtime detail",
 			fmt.Sprintf("failed to request, error code: %s, error message: %s",
 				resp.Error.Code, resp.Error.Msg), false))
 	}
@@ -83,22 +83,22 @@ func GetRuntimeList(ctx *command.Context, orgId, applicationId uint64, workspace
 	response, err := req.Do().Body(&b)
 	if err != nil {
 		return nil, fmt.Errorf(
-			format.FormatErrMsg("list", "failed to request ("+err.Error()+")", false))
+			utils.FormatErrMsg("list", "failed to request ("+err.Error()+")", false))
 	}
 
 	if !response.IsOK() {
-		return nil, fmt.Errorf(format.FormatErrMsg("list",
+		return nil, fmt.Errorf(utils.FormatErrMsg("list",
 			fmt.Sprintf("failed to request, status-code: %d, content-type: %s, raw bod: %s",
 				response.StatusCode(), response.ResponseHeader("Content-Type"), b.String()), false))
 	}
 
 	if err := json.Unmarshal(b.Bytes(), &resp); err != nil {
-		return nil, fmt.Errorf(format.FormatErrMsg("list",
+		return nil, fmt.Errorf(utils.FormatErrMsg("list",
 			fmt.Sprintf("failed to unmarshal runtimes list response ("+err.Error()+")"), false))
 	}
 
 	if !resp.Success {
-		return nil, fmt.Errorf(format.FormatErrMsg("list",
+		return nil, fmt.Errorf(utils.FormatErrMsg("list",
 			fmt.Sprintf("failed to request, error code: %s, error message: %s",
 				resp.Error.Code, resp.Error.Msg), false))
 	}
@@ -110,14 +110,14 @@ func DeleteRuntime(ctx *command.Context, orgId, runtimeId uint64) error {
 	r := ctx.Delete().
 		Header("Org-ID", strconv.FormatUint(orgId, 10)).
 		Path(fmt.Sprintf("/api/runtimes/%d", runtimeId))
-	resp, err := httputils.DoResp(r)
+	resp, err := utils.DoResp(r)
 	if err != nil {
 		return fmt.Errorf(
-			format.FormatErrMsg("remove", "failed to remove runtime, error: "+err.Error(), false))
+			utils.FormatErrMsg("remove", "failed to remove runtime, error: "+err.Error(), false))
 	}
 	if err := resp.ParseData(nil); err != nil {
 		return fmt.Errorf(
-			format.FormatErrMsg(
+			utils.FormatErrMsg(
 				"remove", "failed to parse remove runtime response, error: "+err.Error(), false))
 	}
 
@@ -139,22 +139,22 @@ func CreateRuntime(ctx *command.Context, orgId, projectId, applicationId uint64,
 		Do().Body(&b)
 	if err != nil {
 		return apistructs.RuntimeDeployDTO{}, fmt.Errorf(
-			format.FormatErrMsg("list", "failed to request ("+err.Error()+")", false))
+			utils.FormatErrMsg("list", "failed to request ("+err.Error()+")", false))
 	}
 
 	if !response.IsOK() {
-		return apistructs.RuntimeDeployDTO{}, fmt.Errorf(format.FormatErrMsg("list",
+		return apistructs.RuntimeDeployDTO{}, fmt.Errorf(utils.FormatErrMsg("list",
 			fmt.Sprintf("failed to request, status-code: %d, content-type: %s, raw bod: %s",
 				response.StatusCode(), response.ResponseHeader("Content-Type"), b.String()), false))
 	}
 
 	if err := json.Unmarshal(b.Bytes(), &resp); err != nil {
-		return apistructs.RuntimeDeployDTO{}, fmt.Errorf(format.FormatErrMsg("list",
+		return apistructs.RuntimeDeployDTO{}, fmt.Errorf(utils.FormatErrMsg("list",
 			fmt.Sprintf("failed to unmarshal runtimes list response ("+err.Error()+")"), false))
 	}
 
 	if !resp.Success {
-		return apistructs.RuntimeDeployDTO{}, fmt.Errorf(format.FormatErrMsg("list",
+		return apistructs.RuntimeDeployDTO{}, fmt.Errorf(utils.FormatErrMsg("list",
 			fmt.Sprintf("failed to request, error code: %s, error message: %s",
 				resp.Error.Code, resp.Error.Msg), false))
 	}

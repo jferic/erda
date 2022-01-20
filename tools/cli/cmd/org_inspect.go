@@ -20,8 +20,7 @@ import (
 
 	"github.com/erda-project/erda/tools/cli/command"
 	"github.com/erda-project/erda/tools/cli/common"
-	"github.com/erda-project/erda/tools/cli/format"
-	"github.com/erda-project/erda/tools/cli/prettyjson"
+	"github.com/erda-project/erda/tools/cli/utils"
 )
 
 var ORGINSPECT = command.Command{
@@ -47,7 +46,7 @@ func OrgInspect(ctx *command.Context, orgId uint64, org string) error {
 	} else if orgId <= 0 && ctx.CurrentOrg.ID > 0 {
 		orgIdorName = strconv.FormatUint(ctx.CurrentOrg.ID, 10)
 	} else {
-		return fmt.Errorf(format.FormatErrMsg("org inspect", "invalid Org or OrgID", true))
+		return fmt.Errorf(utils.FormatErrMsg("org inspect", "invalid Org or OrgID", true))
 	}
 
 	o, err := common.GetOrgDetail(ctx, orgIdorName)
@@ -55,9 +54,9 @@ func OrgInspect(ctx *command.Context, orgId uint64, org string) error {
 		return err
 	}
 
-	s, err := prettyjson.Marshal(o)
+	s, err := utils.Marshal(o)
 	if err != nil {
-		return fmt.Errorf(format.FormatErrMsg("org inspect",
+		return fmt.Errorf(utils.FormatErrMsg("org inspect",
 			"failed to prettyjson marshal organization data ("+err.Error()+")", false))
 	}
 

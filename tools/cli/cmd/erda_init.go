@@ -25,8 +25,7 @@ import (
 
 	"github.com/erda-project/erda/tools/cli/command"
 	"github.com/erda-project/erda/tools/cli/common"
-	"github.com/erda-project/erda/tools/cli/dicedir"
-	"github.com/erda-project/erda/tools/cli/format"
+	"github.com/erda-project/erda/tools/cli/utils"
 )
 
 var ERDAINIT = command.Command{
@@ -43,15 +42,15 @@ var ERDAINIT = command.Command{
 }
 
 func ErdaInit(ctx *command.Context, cpuQuota float64, memQuota int) error {
-	if _, err := os.Stat(path.Join(dicedir.ProjectErdaDir, "erda.yml")); err == nil {
+	if _, err := os.Stat(path.Join(utils.ProjectErdaDir, "erda.yml")); err == nil {
 		return fmt.Errorf(
-			format.FormatErrMsg("init", "failed to recreate the erda.yml", false))
+			utils.FormatErrMsg("init", "failed to recreate the erda.yml", false))
 	}
 
-	pdir, err := dicedir.CreateProjectErdaDir()
+	pdir, err := utils.CreateProjectErdaDir()
 	if err != nil && !os.IsExist(err) {
 		return fmt.Errorf(
-			format.FormatErrMsg("init", "failed to create project erda directory: "+err.Error(), false))
+			utils.FormatErrMsg("init", "failed to create project erda directory: "+err.Error(), false))
 	}
 
 	p, err := common.ParseSpringBoot()
@@ -69,7 +68,7 @@ func ErdaInit(ctx *command.Context, cpuQuota float64, memQuota int) error {
 		f, err := os.OpenFile(erdaYml, os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0644)
 		if err != nil {
 			return fmt.Errorf(
-				format.FormatErrMsg("init", "failed to create file "+erdaYml, false))
+				utils.FormatErrMsg("init", "failed to create file "+erdaYml, false))
 		}
 
 		t := template.New("p")
@@ -77,7 +76,7 @@ func ErdaInit(ctx *command.Context, cpuQuota float64, memQuota int) error {
 		err = t.Execute(f, p)
 		if err != nil {
 			return fmt.Errorf(
-				format.FormatErrMsg("init", "failed to write to file "+erdaYml, false))
+				utils.FormatErrMsg("init", "failed to write to file "+erdaYml, false))
 		}
 	}
 	ctx.Succ("Init .erda/erda.yml success.")

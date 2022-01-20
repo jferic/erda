@@ -19,8 +19,7 @@ import (
 
 	"github.com/erda-project/erda/tools/cli/command"
 	"github.com/erda-project/erda/tools/cli/common"
-	"github.com/erda-project/erda/tools/cli/format"
-	"github.com/erda-project/erda/tools/cli/prettyjson"
+	"github.com/erda-project/erda/tools/cli/utils"
 )
 
 var RELEASEINSPECT = command.Command{
@@ -48,9 +47,9 @@ func ReleaseInspect(ctx *command.Context, orgId uint64, org, release string) err
 	if err != nil {
 		return err
 	}
-	s, err := prettyjson.Marshal(r)
+	s, err := utils.Marshal(r)
 	if err != nil {
-		return fmt.Errorf(format.FormatErrMsg("runtime inspect",
+		return fmt.Errorf(utils.FormatErrMsg("runtime inspect",
 			"failed to prettyjson marshal runtime data ("+err.Error()+")", false))
 	}
 

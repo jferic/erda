@@ -19,9 +19,10 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/erda-project/erda/tools/cli/utils"
+
 	"github.com/erda-project/erda/apistructs"
 	"github.com/erda-project/erda/tools/cli/command"
-	"github.com/erda-project/erda/tools/cli/format"
 )
 
 func GetUserDetail(ctx *command.Context, user string) (apistructs.UserGetResponse, error) {
@@ -30,29 +31,29 @@ func GetUserDetail(ctx *command.Context, user string) (apistructs.UserGetRespons
 
 	if user == "" {
 		return apistructs.UserGetResponse{}, fmt.Errorf(
-			format.FormatErrMsg("get user detail", "missing required arg user", false))
+			utils.FormatErrMsg("get user detail", "missing required arg user", false))
 	}
 
 	response, err := ctx.Get().Path("/api/users/" + user).Do().Body(&b)
 	if err != nil {
-		return apistructs.UserGetResponse{}, fmt.Errorf(format.FormatErrMsg(
+		return apistructs.UserGetResponse{}, fmt.Errorf(utils.FormatErrMsg(
 			"get user detail", "failed to request ("+err.Error()+")", false))
 	}
 
 	if !response.IsOK() {
-		return apistructs.UserGetResponse{}, fmt.Errorf(format.FormatErrMsg("get user detail",
+		return apistructs.UserGetResponse{}, fmt.Errorf(utils.FormatErrMsg("get user detail",
 			fmt.Sprintf("failed to request, status-code: %d, content-type: %s, raw bod: %s",
 				response.StatusCode(), response.ResponseHeader("Content-Type"), b.String()), false))
 	}
 
 	if err := json.Unmarshal(b.Bytes(), &resp); err != nil {
-		return apistructs.UserGetResponse{}, fmt.Errorf(format.FormatErrMsg("get user detail",
+		return apistructs.UserGetResponse{}, fmt.Errorf(utils.FormatErrMsg("get user detail",
 			fmt.Sprintf("failed to unmarshal user detail response ("+err.Error()+")"), false))
 	}
 
 	if !resp.Success {
 		return apistructs.UserGetResponse{}, fmt.Errorf(
-			format.FormatErrMsg("get user detail",
+			utils.FormatErrMsg("get user detail",
 				fmt.Sprintf("failed to request, error code: %s, error message: %s",
 					resp.Error.Code, resp.Error.Msg), false))
 	}

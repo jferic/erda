@@ -27,9 +27,8 @@ import (
 	"github.com/erda-project/erda/apistructs"
 	"github.com/erda-project/erda/pkg/http/httpclient"
 	"github.com/erda-project/erda/pkg/terminal/color_str"
-	"github.com/erda-project/erda/tools/cli/dicedir"
-	"github.com/erda-project/erda/tools/cli/format"
 	"github.com/erda-project/erda/tools/cli/status"
+	"github.com/erda-project/erda/tools/cli/utils"
 )
 
 var ctx = Context{
@@ -93,22 +92,22 @@ func (c *Context) AvailableOrgs() ([]apistructs.OrgDTO, error) {
 	response, err := ctx.Get().Path("/api/orgs").Do().Body(&b)
 	if err != nil {
 		return nil, fmt.Errorf(
-			format.FormatErrMsg("orgs", "failed to request ("+err.Error()+")", false))
+			utils.FormatErrMsg("orgs", "failed to request ("+err.Error()+")", false))
 	}
 
 	if !response.IsOK() {
-		return nil, fmt.Errorf(format.FormatErrMsg("orgs",
+		return nil, fmt.Errorf(utils.FormatErrMsg("orgs",
 			fmt.Sprintf("failed to request, status-code: %d, content-type: %s, raw bod: %s",
 				response.StatusCode(), response.ResponseHeader("Content-Type"), b.String()), false))
 	}
 
 	if err := json.Unmarshal(b.Bytes(), &resp); err != nil {
-		return nil, fmt.Errorf(format.FormatErrMsg("orgs",
+		return nil, fmt.Errorf(utils.FormatErrMsg("orgs",
 			fmt.Sprintf("failed to unmarshal organizations list response ("+err.Error()+")"), false))
 	}
 
 	if !resp.Success {
-		return nil, fmt.Errorf(format.FormatErrMsg("orgs",
+		return nil, fmt.Errorf(utils.FormatErrMsg("orgs",
 			fmt.Sprintf("error code(%s), error message(%s)", resp.Error.Code, resp.Error.Msg), false))
 	}
 
@@ -117,9 +116,9 @@ func (c *Context) AvailableOrgs() ([]apistructs.OrgDTO, error) {
 
 // 项目 .dice 目录下的 dice.yml
 func defaultYml(env string) (string, error) {
-	pdir, err := dicedir.FindProjectErdaDir()
+	pdir, err := utils.FindProjectErdaDir()
 	if err != nil {
-		return "", fmt.Errorf(format.FormatErrMsg("get default erda.yml",
+		return "", fmt.Errorf(utils.FormatErrMsg("get default erda.yml",
 			"find erda dir of current project error: "+err.Error(), false))
 	}
 	var envfilename string
@@ -151,7 +150,7 @@ func defaultYmlCheckExist(env string) (string, error) {
 	}
 	if f.IsDir() {
 		return "", fmt.Errorf(
-			format.FormatErrMsg("check default erda.yml exist", "erda.yml can not be a dir", false))
+			utils.FormatErrMsg("check default erda.yml exist", "erda.yml can not be a dir", false))
 	}
 	return path, nil
 }

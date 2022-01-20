@@ -23,7 +23,7 @@ import (
 	"github.com/erda-project/erda/pkg/terminal/table"
 	"github.com/erda-project/erda/tools/cli/command"
 	"github.com/erda-project/erda/tools/cli/common"
-	"github.com/erda-project/erda/tools/cli/dicedir"
+	"github.com/erda-project/erda/tools/cli/utils"
 )
 
 var ORG = command.Command{
@@ -39,7 +39,7 @@ var ORG = command.Command{
 
 func GetOrgs(ctx *command.Context, noHeaders bool, pageSize int) error {
 	num := 0
-	err := dicedir.PagingView(
+	err := utils.PagingView(
 		func(pageNo, pageSize int) (bool, error) {
 			pagingOrgs, err := common.GetPagingOrganizations(ctx, pageNo, pageSize)
 			if err != nil {

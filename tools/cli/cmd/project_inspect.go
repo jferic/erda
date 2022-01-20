@@ -19,8 +19,7 @@ import (
 
 	"github.com/erda-project/erda/tools/cli/command"
 	"github.com/erda-project/erda/tools/cli/common"
-	"github.com/erda-project/erda/tools/cli/format"
-	"github.com/erda-project/erda/tools/cli/prettyjson"
+	"github.com/erda-project/erda/tools/cli/utils"
 )
 
 var PROJECTINSPECT = command.Command{
@@ -56,9 +55,9 @@ func InspectProject(ctx *command.Context, orgId, projectId uint64, org, project 
 		return err
 	}
 
-	s, err := prettyjson.Marshal(resp.Data)
+	s, err := utils.Marshal(resp.Data)
 	if err != nil {
-		return fmt.Errorf(format.FormatErrMsg("project inspect",
+		return fmt.Errorf(utils.FormatErrMsg("project inspect",
 			"failed to prettyjson marshal project data ("+err.Error()+")", false))
 	}
 

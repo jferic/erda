@@ -17,7 +17,7 @@ package cmd
 import (
 	"github.com/erda-project/erda/pkg/terminal/table"
 	"github.com/erda-project/erda/tools/cli/command"
-	"github.com/erda-project/erda/tools/cli/dicedir"
+	"github.com/erda-project/erda/tools/cli/utils"
 )
 
 var ERDA = command.Command{
@@ -31,7 +31,7 @@ var ERDA = command.Command{
 }
 
 func ErdaGet(ctx *command.Context, noHeaders bool) error {
-	branch, err := dicedir.GetWorkspaceBranch()
+	branch, err := utils.GetWorkspaceBranch()
 	if err != nil {
 		return err
 	}

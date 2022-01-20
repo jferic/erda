@@ -21,7 +21,7 @@ import (
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v3"
 
-	"github.com/erda-project/erda/tools/cli/dicedir"
+	"github.com/erda-project/erda/tools/cli/utils"
 )
 
 var (
@@ -83,7 +83,7 @@ func GetCurContext() (CurCtx, error) {
 
 func GetConfig() (string, *Config, error) {
 	conf := Config{Version: Version}
-	config, err := dicedir.FindGlobalConfig()
+	config, err := utils.FindGlobalConfig()
 	if err != nil {
 		return config, &conf, err
 	}
