@@ -54,17 +54,30 @@ func FindProjectConfig() (string, error) {
 	}
 
 	var res string
-	if existProjErdaConfigDir(current) {
-		res = mkProjErdaConfigDirPath(current)
-		file := filepath.Join(res, GlobalConfigFile)
-		f, err := os.Stat(file)
-		if os.IsNotExist(err) {
-			return file, NotExist
+
+	for {
+		//if existProjDiceDir(current) {
+		//	res = mkProjDiceDirPath(current)
+		//	return res, nil
+		//}
+
+		if existProjErdaConfigDir(current) {
+			res = mkProjErdaConfigDirPath(current)
+			file := filepath.Join(res, GlobalConfigFile)
+			f, err := os.Stat(file)
+			if os.IsNotExist(err) {
+				return file, NotExist
+			}
+			if f.IsDir() {
+				return file, errors.New(res + " is a dirctory")
+			}
+			return file, nil
 		}
-		if f.IsDir() {
-			return file, errors.New(res + " is a dirctory")
+		origin := current
+		current = filepath.Dir(current)
+		if current == origin {
+			return "", NotExist
 		}
-		return file, nil
 	}
 
 	return "", NotExist

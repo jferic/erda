@@ -59,6 +59,9 @@ func ApplicationOpen(ctx *command.Context, orgId, projectId, applicationId uint6
 		return err
 	}
 
-	ctx.Succ("Open application in browser.")
+	if application == "" {
+		application = ctx.CurrentApplication.Name
+	}
+	ctx.Succ("Open application '%s' in browser.", application)
 	return nil
 }

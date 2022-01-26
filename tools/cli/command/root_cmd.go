@@ -126,7 +126,7 @@ _/_/_/_/       _/    _/      _/_/_/        _/    _/
 		}
 
 		// parse and use context according to host param or config file
-		if err := parseCtx(cmd.Parent().Name()); err != nil {
+		if err := parseCtx(); err != nil {
 			err = fmt.Errorf(color_str.Red("✗ ") + err.Error())
 			fmt.Println("xxx", err)
 			return err
@@ -203,46 +203,21 @@ func ensureSessionInfos() (map[string]status.StatusInfo, error) {
 	return sessionInfos, nil
 }
 
-func parseCtx(cmdParent string) error {
+func parseCtx() error {
 	if host == "" {
-		//c, err := GetCurContext()
-		//if err != nil && err != utils.NotExist && !os.IsNotExist(err) {
-		//	return err
-		//}
-
-		//host = c.Platform.Server
-		//if c.Platform.OrgInfo != nil {
-		//	ctx.CurrentOrg = *c.Platform.OrgInfo
-		//}
-
-		// TODO xxx when app
-		if cmdParent == "application" {
-			_, config, err := GetApplicationConfig()
-
-			if err != nil && err != utils.NotExist {
-				return err
-			}
-			if err == nil {
-				host = config.Server
-				ctx.CurrentOrg.ID = config.OrgId
-				ctx.CurrentOrg.Name = config.Org
-				ctx.CurrentProject.ID = config.ProjectId
-				ctx.CurrentProject.Name = config.Project
-				ctx.CurrentApplication.Name = config.Application
-				ctx.CurrentApplication.ID = config.ApplicationId
-			}
-		} else {
-			_, config, err := GetProjectConfig()
-
-			if err != nil && err != utils.NotExist {
-				return err
-			}
-			if err == nil {
-				host = config.Server
-				ctx.CurrentOrg.ID = config.OrgId
-				ctx.CurrentOrg.Name = config.Org
-				ctx.CurrentProject.ID = config.ProjectId
-				ctx.CurrentProject.Name = config.Project
+		_, config, err := GetProjectConfig()
+		if err != nil && err != utils.NotExist {
+			return err
+		}
+		if err == nil {
+			host = config.Server
+			ctx.CurrentOrg.ID = config.OrgId
+			ctx.CurrentOrg.Name = config.Org
+			ctx.CurrentProject.ID = config.ProjectId
+			ctx.CurrentProject.Name = config.Project
+			for _, a := range config.Applications {
+				a2 := ApplicationInfo2{a.ApplicationId, a.Application}
+				ctx.Applications = append(ctx.Applications, a2)
 			}
 		}
 
@@ -250,6 +225,13 @@ func parseCtx(cmdParent string) error {
 		if _, err := os.Stat(".git"); err == nil {
 			// fetch host from git remote url
 			info, err := utils.GetWorkspaceInfo(Remote)
+			for _, a := range ctx.Applications {
+				if a.Name == info.Application {
+					ctx.CurrentApplication.Name = a.Name
+					ctx.CurrentApplication.ID = a.ID
+				}
+			}
+
 			if err != nil && err != utils.InvalidErdaRepo {
 				return err
 			}

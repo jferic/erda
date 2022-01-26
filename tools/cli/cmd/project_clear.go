@@ -71,8 +71,10 @@ func ClearProject(ctx *command.Context, orgId, projectId uint64, org, project, w
 
 	err = clearProject(ctx, orgId, projectId, workspace, waitRuntime, waitAddon, deleteApps, deleteCAs)
 
-	// TODO get project
-	ctx.Succ("Project '%s' clear success.", project)
+	if project == "" {
+		project = ctx.CurrentProject.Name
+	}
+	ctx.Succ("Project '%s' cleared.", project)
 	return nil
 }
 

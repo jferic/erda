@@ -37,10 +37,13 @@ var CLONE = command.Command{
 	Args: []command.Arg{
 		command.StringArg{}.Name("url"),
 	},
+	Flags: []command.Flag{
+		command.BoolFlag{Short: "", Name: "cloneApps", Doc: "if false, don't clone applications in the project", DefaultValue: true},
+	},
 	Run: Clone,
 }
 
-func Clone(ctx *command.Context, ustr string) error {
+func Clone(ctx *command.Context, ustr string, cloneApps bool) error {
 	var org string
 	var orgId uint64
 	//var project string
@@ -77,46 +80,59 @@ func Clone(ctx *command.Context, ustr string) error {
 		return err
 	}
 
-	// init project
-	if t == utils.ProjectURL {
+	var pInfo *command.ProjectInfo
+	var successInfo string
 
-		_, _, err := command.GetProjectConfig()
-		if err != nil && err != utils.NotExist {
-			return err
-		} else if err == nil {
-			return errors.New("you are already in a erda project workspace.")
-		}
+	_, _, err = command.GetProjectConfig()
+	if err != nil && err != utils.NotExist {
+		return err
+	} else if err == nil && t == utils.ProjectURL {
+		return errors.New("you are already in a erda project workspace.")
+	}
 
-		p, err := common.GetProjectDetail(ctx, orgId, projectId)
-		if err != nil {
-			return err
-		}
-		pInfo := command.ProjectInfo{
-			command.ConfigVersion,
-			"https://openapi.erda.cloud", // TODO
-			org,
-			orgId,
-			p.Name,
-			projectId,
-		}
+	p, err := common.GetProjectDetail(ctx, orgId, projectId)
+	if err != nil {
+		return err
+	}
+	pInfo = &command.ProjectInfo{
+		Version:   command.ConfigVersion,
+		Server:    "https://openapi.erda.cloud", // TODO
+		Org:       org,
+		OrgId:     orgId,
+		Project:   p.Name,
+		ProjectId: projectId,
+	}
 
-		for _, d := range []string{
-			p.Name,
-			fmt.Sprintf("%s/%s", p.Name, utils.GlobalErdaDir),
-		} {
-			err = os.MkdirAll(d, 0755)
+	appList, err := common.GetApplications(ctx, orgId, projectId)
+	if err != nil {
+		return err
+	}
+	for _, a := range appList {
+		aInfo := command.ApplicationInfo{a.Name, a.ID}
+		pInfo.Applications = append(pInfo.Applications, aInfo)
+
+		if t == utils.ProjectURL && cloneApps {
+			repo := fmt.Sprintf("%s://%s", u.Scheme, a.GitRepoNew)
+			dir := fmt.Sprintf("%s/%s", p.Name, a.Name)
+			err = cloneApplication(pInfo, a, repo, dir)
 			if err != nil {
 				return err
 			}
 		}
+	}
 
-		pconfig := fmt.Sprintf("%s/.erda.d/config", p.Name)
-		err = command.SetProjectConfig(pconfig, &pInfo)
+	for _, d := range []string{
+		p.Name,
+		fmt.Sprintf("%s/%s", p.Name, utils.GlobalErdaDir),
+	} {
+		err = os.MkdirAll(d, 0755)
 		if err != nil {
 			return err
 		}
-		ctx.Succ("Project '%s' cloned.", p.Name)
-	} else if t == utils.ApplicatinURL { // init application
+	}
+	successInfo = fmt.Sprintf("Project '%s' cloned.", p.Name)
+
+	if t == utils.ApplicatinURL { // init application
 		a, err := common.GetApplicationDetail(ctx, orgId, projectId, applicationId)
 		if err != nil {
 			return err
@@ -124,66 +140,39 @@ func Clone(ctx *command.Context, ustr string) error {
 
 		repo := fmt.Sprintf("%s://%s", u.Scheme, a.GitRepoNew)
 
-		err = cloneApplication(a, repo)
+		dir := fmt.Sprintf("%s/%s", p.Name, a.Name)
+		err = cloneApplication(pInfo, a, repo, dir)
 		if err != nil {
 			return err
 		}
 
-		ctx.Succ("Application '%s' cloned.", a.Name)
+		pInfo.Applications = append(pInfo.Applications, command.ApplicationInfo{
+			a.Name, a.ID,
+		})
+
+		successInfo = fmt.Sprintf("Application '%s/%s' cloned.", a.ProjectName, a.Name)
 	}
+
+	pconfig := fmt.Sprintf("%s/.erda.d/config", pInfo.Project)
+	err = command.SetProjectConfig(pconfig, pInfo)
+	if err != nil {
+		return err
+	}
+	ctx.Succ(successInfo)
 
 	return nil
 }
 
-func cloneApplication(a apistructs.ApplicationDTO, repo string) error {
-	_, pInfo, err := command.GetProjectConfig()
-	if err != nil {
-		if err == utils.NotExist {
-			return errors.New("current workspace is not an erda project.")
-		}
-		return err
-	}
-
+func cloneApplication(pInfo *command.ProjectInfo, a apistructs.ApplicationDTO, repo, dir string) error {
 	if pInfo.ProjectId != a.ProjectID || pInfo.OrgId != a.OrgID {
 		return errors.Errorf("application %s/%s cloned is not belong to project %s in the current workspace",
 			a.ProjectName, a.Name, pInfo.Project)
 	}
 
 	// clone code
-	_, err = exec.Command("git", "clone", repo).Output()
+	output, err := exec.Command("git", "clone", repo, dir).CombinedOutput()
 	if err != nil {
-		fmt.Printf("git clone repo err: %v", err)
-		return err
-	}
-	err = createApplicationDir(*pInfo, a.Name, a.ID)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func createApplicationDir(pInfo command.ProjectInfo, name string, applicationId uint64) error {
-	aInfo := command.ApplicationInfo{
-		pInfo,
-		name,
-		applicationId,
-	}
-
-	for _, d := range []string{
-		name,
-		fmt.Sprintf("%s/%s", name, utils.GlobalErdaDir),
-	} {
-		err := os.MkdirAll(d, 0755)
-		if err != nil {
-			return err
-		}
-	}
-
-	aconfig := fmt.Sprintf("%s/.erda.d/config", name)
-	err := command.SetApplicationConfig(aconfig, &aInfo)
-	if err != nil {
-		return err
+		return errors.Errorf("git clone repo %s err, %s", repo, output)
 	}
 
 	return nil
