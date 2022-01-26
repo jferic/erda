@@ -35,12 +35,13 @@ var RUNTIME = command.Command{
 		command.Uint64Flag{Short: "", Name: "org-id", Doc: "the id of an organization", DefaultValue: 0},
 		command.Uint64Flag{Short: "", Name: "application-id", Doc: "the id of an application", DefaultValue: 0},
 		command.StringFlag{Short: "", Name: "org", Doc: "the name of an organization", DefaultValue: ""},
+		command.StringFlag{Short: "", Name: "application", Doc: "the name of an application", DefaultValue: ""},
 		command.StringFlag{Short: "", Name: "workspace", Doc: "the env workspace of an application", DefaultValue: ""},
 	},
 	Run: RuntimeList,
 }
 
-func RuntimeList(ctx *command.Context, noHeaders bool, orgId, applicationId uint64, org, workspace string) error {
+func RuntimeList(ctx *command.Context, noHeaders bool, orgId, applicationId uint64, org, application, workspace string) error {
 	if workspace != "" {
 		if !apistructs.WorkSpace(workspace).Valide() {
 			return errors.New(fmt.Sprintf("Invalide workspace %s, should be one in %s",
@@ -54,8 +55,10 @@ func RuntimeList(ctx *command.Context, noHeaders bool, orgId, applicationId uint
 		return err
 	}
 
-	if applicationId <= 0 {
-		return errors.New("Invalid application id")
+	// TODO rm project id
+	applicationId, err = getApplicationId(ctx, orgId, ctx.CurrentProject.ID, application, applicationId)
+	if err != nil {
+		return err
 	}
 
 	list, err := common.GetRuntimeList(ctx, orgId, applicationId, workspace, "")

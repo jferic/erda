@@ -91,35 +91,28 @@ func IsDir(path string) bool {
 	return s.IsDir()
 }
 
-type WorkspaceInfo struct {
-	Scheme      string
-	Host        string
-	Org         string
-	Project     string
-	Application string
-}
-
-func GetWorkspaceInfo(remoteName string) (WorkspaceInfo, error) {
+func GetWorkspaceInfo(remoteName string) (GitterURLInfo, error) {
 	remoteCmd := exec.Command("git", "remote", "get-url", remoteName)
 	out, err := remoteCmd.CombinedOutput()
 	if err != nil {
-		return WorkspaceInfo{}, errors.WithMessage(err, strings.TrimSpace(string(out)))
+		return GitterURLInfo{}, errors.WithMessage(err, strings.TrimSpace(string(out)))
 	}
 
 	re := regexp.MustCompile(`\r?\n`)
 	newStr := re.ReplaceAllString(string(out), "")
+
 	u, err := url.Parse(newStr)
 	if err != nil {
-		return WorkspaceInfo{}, err
+		return GitterURLInfo{}, err
 	}
-	// <org>/dop/<project>/<app>
-	paths := strings.Split(u.Path, "/")
-	if len(paths) != 5 || paths[2] != "dop" {
-		return WorkspaceInfo{}, InvalidErdaRepo
+	t, paths, err := ClassifyURL(u.Path)
+	if err != nil || t != GittarURL {
+		return GitterURLInfo{}, InvalidErdaRepo
 	}
 
-	return WorkspaceInfo{
-		u.Scheme, u.Host, paths[1], paths[3], paths[4],
+	// /<org>/dop/<project>/<app>
+	return GitterURLInfo{
+		OrganizationURLInfo{u.Scheme, u.Host, paths[1]}, paths[3], paths[4],
 	}, nil
 }
 

@@ -34,21 +34,24 @@ var SERVICE = command.Command{
 		command.Uint64Flag{Short: "", Name: "org-id", Doc: "the id of an organization", DefaultValue: 0},
 		command.Uint64Flag{Short: "", Name: "application-id", Doc: "the id of an application", DefaultValue: 0},
 		command.StringFlag{Short: "", Name: "org", Doc: "the name of an organization", DefaultValue: ""},
+		command.StringFlag{Short: "", Name: "application", Doc: "the name of an application", DefaultValue: ""},
 		command.StringFlag{Short: "", Name: "workspace", Doc: "the env workspace for runtime", DefaultValue: ""},
 		command.StringFlag{Short: "", Name: "runtime", Doc: "the id of an application", DefaultValue: ""},
 	},
 	Run: ServiceList,
 }
 
-func ServiceList(ctx *command.Context, noHeaders bool, orgId, applicationId uint64, org, workspace, runtime string) error {
+func ServiceList(ctx *command.Context, noHeaders bool, orgId, applicationId uint64, org, application, workspace, runtime string) error {
 	checkOrgParam(org, orgId)
 	orgId, err := getOrgId(ctx, org, orgId)
 	if err != nil {
 		return err
 	}
 
-	if applicationId <= 0 {
-		return errors.New("invalid application id")
+	// TODO rm project id
+	applicationId, err = getApplicationId(ctx, orgId, ctx.CurrentProject.ID, application, applicationId)
+	if err != nil {
+		return err
 	}
 
 	if workspace == "" || runtime == "" {

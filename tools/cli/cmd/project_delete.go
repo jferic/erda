@@ -62,6 +62,7 @@ func ProjectDelete(ctx *command.Context, org, project string, orgId, projectId u
 		return err
 	}
 
-	ctx.Succ("Project deleted.")
+	// TODDO get project
+	ctx.Succ("Project '%s' deleted.", project)
 	return nil
 }

@@ -43,6 +43,8 @@ type Context struct {
 	Sessions           map[string]status.StatusInfo
 	CurrentOpenApiHost string
 	CurrentOrg         OrgInfo
+	CurrentProject     ProjectInfo2
+	CurrentApplication ApplicationInfo2
 	Debug              bool
 	Token              string // uc token
 	HttpClient         *httpclient.HTTPClient
@@ -51,6 +53,16 @@ type OrgInfo struct {
 	ID   uint64 `json:"id"`
 	Name string `json:"name"`
 	Desc string `json:"desc"`
+}
+
+type ProjectInfo2 struct {
+	ID   uint64
+	Name string
+}
+
+type ApplicationInfo2 struct {
+	ID   uint64
+	Name string
 }
 
 func (c *Context) Get() *httpclient.Request {

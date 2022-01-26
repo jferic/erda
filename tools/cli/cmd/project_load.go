@@ -29,6 +29,7 @@ import (
 	"github.com/erda-project/erda/tools/cli/utils"
 )
 
+// TODO make it using project release ??
 var PROJECTLOAD = command.Command{
 	Name:       "load",
 	ParentName: "PROJECT",

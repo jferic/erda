@@ -68,7 +68,6 @@ func ProjectMember(ctx *command.Context, noHeaders bool, orgId, projectId uint64
 		for _, m := range pagingMembers.List {
 			data = append(data, []string{
 				m.Nick,
-				m.Name,
 				m.Email,
 				m.Mobile,
 				strings.Join(m.Roles, ","),
@@ -78,7 +77,7 @@ func ProjectMember(ctx *command.Context, noHeaders bool, orgId, projectId uint64
 		t := table.NewTable()
 		if !noHeaders {
 			t.Header([]string{
-				"Nick", "Name", "Email", "Mobile", "Roles",
+				"Nick", "Email", "Mobile", "Roles",
 			})
 		}
 		err = t.Data(data).Flush()

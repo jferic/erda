@@ -27,7 +27,7 @@ var APPLICATIONINSPECT = command.Command{
 	Name:       "inspect",
 	ParentName: "APPLICATION",
 	ShortHelp:  "inspect application",
-	Example:    "$ erda-cli application inspect --project=<name>",
+	Example:    "$ erda-cli application inspect --application=<name>",
 	Flags: []command.Flag{
 		command.Uint64Flag{Short: "", Name: "org-id", Doc: "the id of an organization ", DefaultValue: 0},
 		command.Uint64Flag{Short: "", Name: "project-id", Doc: "the id of a project ", DefaultValue: 0},
