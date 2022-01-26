@@ -15,8 +15,6 @@
 package cmd
 
 import (
-	"github.com/pkg/errors"
-
 	"github.com/erda-project/erda/tools/cli/command"
 	"github.com/erda-project/erda/tools/cli/common"
 )
@@ -28,20 +26,25 @@ var APPLICATIONDELETE = command.Command{
 	Example:    "$ erda-cli application delete --application-id=<id>",
 	Flags: []command.Flag{
 		command.Uint64Flag{Short: "", Name: "application-id", Doc: "the id of an application ", DefaultValue: 0},
+		command.StringFlag{Short: "", Name: "application", Doc: "the name of an application ", DefaultValue: ""},
 	},
 	Run: ApplicationDelete,
 }
 
-func ApplicationDelete(ctx *command.Context, applicationId uint64) error {
-	if applicationId <= 0 {
-		return errors.New("Invalid application id")
-	}
-
-	err := common.DeleteApplication(ctx, applicationId)
+func ApplicationDelete(ctx *command.Context, applicationId uint64, application string) error {
+	// TODO get app by id
+	applicationId, err := getApplicationId(ctx, ctx.CurrentOrg.ID, ctx.CurrentProject.ID, application, applicationId)
 	if err != nil {
 		return err
 	}
 
-	ctx.Succ("Application deleted.")
+	err = common.DeleteApplication(ctx, applicationId)
+	if err != nil {
+		return err
+	}
+
+	// TODO rm app in pwd ?
+
+	ctx.Succ("Application '%s' deleted.", application)
 	return nil
 }

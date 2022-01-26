@@ -32,6 +32,7 @@ var RUNTIMEINSPECT = command.Command{
 	Example:    "$ erda-cli runtime inspect --runtime=<id>",
 	Flags: []command.Flag{
 		command.StringFlag{Short: "", Name: "org", Doc: "the name of an organization", DefaultValue: ""},
+		command.StringFlag{Short: "", Name: "application", Doc: "the name of an application", DefaultValue: ""},
 		command.Uint64Flag{Short: "", Name: "org-id", Doc: "the id of an organization", DefaultValue: 0},
 		command.Uint64Flag{Short: "", Name: "application-id", Doc: "the id of an application", DefaultValue: 0},
 		command.StringFlag{Short: "", Name: "workspace", Doc: "the workspace of a runtime", DefaultValue: ""},
@@ -40,10 +41,16 @@ var RUNTIMEINSPECT = command.Command{
 	Run: RuntimeInspect,
 }
 
-func RuntimeInspect(ctx *command.Context, org string, orgId, applicationId uint64, workspace, runtime string) error {
+func RuntimeInspect(ctx *command.Context, org, application string, orgId, applicationId uint64, workspace, runtime string) error {
 	checkOrgParam(org, orgId)
 
 	orgId, err := getOrgId(ctx, org, orgId)
+	if err != nil {
+		return err
+	}
+
+	// TODO rm project id
+	applicationId, err = getApplicationId(ctx, orgId, ctx.CurrentProject.ID, application, applicationId)
 	if err != nil {
 		return err
 	}

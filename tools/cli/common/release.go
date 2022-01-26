@@ -94,8 +94,8 @@ func GetPagingReleases(ctx *command.Context, orgId, applicationId uint64, branch
 	return resp.Data, nil
 }
 
-func ChooseRelease(ctx *command.Context, orgId, applicationId uint64, branch, version string) (bool, apistructs.ReleaseGetResponseData, error) {
-	var release apistructs.ReleaseGetResponseData
+func ChooseRelease(ctx *command.Context, orgId, applicationId uint64, branch, version string) (bool, apistructs.ReleaseData, error) {
+	var release apistructs.ReleaseData
 	num := 0
 	found := false
 	err := utils.PagingAll(func(pageNo, pageSize int) (bool, error) {
@@ -114,11 +114,11 @@ func ChooseRelease(ctx *command.Context, orgId, applicationId uint64, branch, ve
 		return paging.Total > int64(num), nil
 	}, 10)
 	if err != nil {
-		return false, apistructs.ReleaseGetResponseData{}, err
+		return false, apistructs.ReleaseData{}, err
 	}
 
 	if !found {
-		return false, apistructs.ReleaseGetResponseData{}, nil
+		return false, apistructs.ReleaseData{}, nil
 	}
 
 	return true, release, nil

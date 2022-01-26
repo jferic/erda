@@ -60,7 +60,6 @@ func OrgMember(ctx *command.Context, noHeaders bool, orgId uint64, org string, p
 		for _, m := range pagingMembers.List {
 			data = append(data, []string{
 				m.Nick,
-				m.Name,
 				m.Email,
 				m.Mobile,
 				strings.Join(m.Roles, ","),
@@ -70,7 +69,7 @@ func OrgMember(ctx *command.Context, noHeaders bool, orgId uint64, org string, p
 		t := table.NewTable()
 		if !noHeaders {
 			t.Header([]string{
-				"Nick", "Name", "Email", "Mobile", "Roles",
+				"Nick", "Email", "Mobile", "Roles",
 			})
 		}
 		err = t.Data(data).Flush()

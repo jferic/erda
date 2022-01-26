@@ -126,14 +126,19 @@ func checkApplicationParam(application string, applicationId uint64) {
 
 func getApplicationId(ctx *command.Context, orgId, projectId uint64, application string, applicationId uint64) (uint64, error) {
 	if application != "" {
+		// TODO get no projectid
 		appId, err := common.GetApplicationIdByName(ctx, orgId, projectId, application)
 		if err != nil {
 			return applicationId, err
 		}
 		applicationId = appId
 	}
-	if applicationId <= 0 {
+	if applicationId <= 0 && ctx.CurrentApplication.ID <= 0 {
 		return applicationId, errors.New("Invalid application id")
+	}
+
+	if applicationId == 0 && ctx.CurrentApplication.ID > 0 {
+		applicationId = ctx.CurrentApplication.ID
 	}
 
 	return applicationId, nil

@@ -31,7 +31,44 @@ var (
 	ProjectPipelineDir = ".dice/pipelines"
 
 	ProjectErdaDir = ".erda"
+
+	ProjectErdaConfigDir = ".erda.d"
 )
+
+func existProjErdaConfigDir(path string) bool {
+	f, err := os.Stat(mkProjErdaConfigDirPath(path))
+	if os.IsNotExist(err) {
+		return false
+	}
+	return f.IsDir()
+}
+
+func mkProjErdaConfigDirPath(path string) string {
+	return filepath.Join(path, ProjectErdaConfigDir)
+}
+
+func FindProjectConfig() (string, error) {
+	current, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+
+	var res string
+	if existProjErdaConfigDir(current) {
+		res = mkProjErdaConfigDirPath(current)
+		file := filepath.Join(res, GlobalConfigFile)
+		f, err := os.Stat(file)
+		if os.IsNotExist(err) {
+			return file, NotExist
+		}
+		if f.IsDir() {
+			return file, errors.New(res + " is a dirctory")
+		}
+		return file, nil
+	}
+
+	return "", NotExist
+}
 
 func FindGlobalConfig() (string, error) {
 	erdaDir, err := FindGlobalErdaDir()

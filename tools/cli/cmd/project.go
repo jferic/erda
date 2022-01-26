@@ -110,10 +110,6 @@ func GetProjects(ctx *command.Context, noHeaders bool, orgId uint64, org string,
 }
 
 func getProjectId(ctx *command.Context, orgId uint64, project string, projectId uint64) (uint64, error) {
-	if projectId == 0 && project == "" {
-		return projectId, errors.New("Must set one of --project or --project-id")
-	}
-
 	if project != "" {
 		pId, err := common.GetProjectIdByName(ctx, orgId, project)
 		if err != nil {
@@ -122,8 +118,12 @@ func getProjectId(ctx *command.Context, orgId uint64, project string, projectId 
 		projectId = pId
 	}
 
-	if projectId <= 0 {
+	if projectId <= 0 && ctx.CurrentProject.ID <= 0 {
 		return projectId, errors.New("Invalid project id")
+	}
+
+	if projectId == 0 && ctx.CurrentProject.ID > 0 {
+		projectId = ctx.CurrentProject.ID
 	}
 
 	return projectId, nil

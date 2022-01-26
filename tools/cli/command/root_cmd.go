@@ -31,7 +31,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"github.com/erda-project/erda/apistructs"
 	"github.com/erda-project/erda/pkg/http/httpclient"
 	"github.com/erda-project/erda/pkg/terminal/color_str"
 	"github.com/erda-project/erda/tools/cli/status"
@@ -51,15 +50,6 @@ var (
 var (
 	loginWhiteList = []string{
 		"completion",
-		"config",
-		"config current-context",
-		"config get-contexts",
-		"config get-platforms",
-		"config use-context <name>",
-		"config set-context <name>",
-		"config set-platform <name>",
-		"config delete-context <name>",
-		"config delete-platform <name>",
 		"erda",
 		"erda init",
 		"erda parse",
@@ -127,10 +117,18 @@ _/_/_/_/       _/    _/      _/_/_/        _/    _/
 			}
 		}
 
+		if strings.HasPrefix(u, "clone") {
+			u, err := url.Parse(args[0])
+			if err != nil {
+				return err
+			}
+			host = fmt.Sprintf("%s://%s", u.Scheme, u.Host)
+		}
+
 		// parse and use context according to host param or config file
-		if err := parseCtx(); err != nil {
+		if err := parseCtx(cmd.Parent().Name()); err != nil {
 			err = fmt.Errorf(color_str.Red("✗ ") + err.Error())
-			fmt.Println(err)
+			fmt.Println("xxx", err)
 			return err
 		}
 
@@ -143,14 +141,14 @@ _/_/_/_/       _/    _/      _/_/_/        _/    _/
 		ctx.Sessions = sessionInfos
 
 		// Get OrgInfo after login with info in git repository
-		if ctx.CurrentOrg.Name != "" && ctx.CurrentOrg.ID == 0 {
-			resp, err := fetchOrgIdByName(ctx.CurrentOrg.Name)
-			if err != nil {
-				return err
-			}
-			ctx.CurrentOrg.ID = resp.Data.ID
-			ctx.CurrentOrg.Desc = resp.Data.Desc
-		}
+		//if ctx.CurrentOrg.Name != "" && ctx.CurrentOrg.ID == 0 {
+		//	resp, err := fetchOrgIdByName(ctx.CurrentOrg.Name)
+		//	if err != nil {
+		//		return err
+		//	}
+		//	ctx.CurrentOrg.ID = resp.Data.ID
+		//	ctx.CurrentOrg.Desc = resp.Data.Desc
+		//}
 
 		return nil
 	},
@@ -205,18 +203,50 @@ func ensureSessionInfos() (map[string]status.StatusInfo, error) {
 	return sessionInfos, nil
 }
 
-func parseCtx() error {
+func parseCtx(cmdParent string) error {
 	if host == "" {
-		c, err := GetCurContext()
-		if err != nil && err != utils.NotExist && !os.IsNotExist(err) {
-			return err
+		//c, err := GetCurContext()
+		//if err != nil && err != utils.NotExist && !os.IsNotExist(err) {
+		//	return err
+		//}
+
+		//host = c.Platform.Server
+		//if c.Platform.OrgInfo != nil {
+		//	ctx.CurrentOrg = *c.Platform.OrgInfo
+		//}
+
+		// TODO xxx when app
+		if cmdParent == "application" {
+			_, config, err := GetApplicationConfig()
+
+			if err != nil && err != utils.NotExist {
+				return err
+			}
+			if err == nil {
+				host = config.Server
+				ctx.CurrentOrg.ID = config.OrgId
+				ctx.CurrentOrg.Name = config.Org
+				ctx.CurrentProject.ID = config.ProjectId
+				ctx.CurrentProject.Name = config.Project
+				ctx.CurrentApplication.Name = config.Application
+				ctx.CurrentApplication.ID = config.ApplicationId
+			}
+		} else {
+			_, config, err := GetProjectConfig()
+
+			if err != nil && err != utils.NotExist {
+				return err
+			}
+			if err == nil {
+				host = config.Server
+				ctx.CurrentOrg.ID = config.OrgId
+				ctx.CurrentOrg.Name = config.Org
+				ctx.CurrentProject.ID = config.ProjectId
+				ctx.CurrentProject.Name = config.Project
+			}
 		}
 
-		host = c.Platform.Server
-		if c.Platform.OrgInfo != nil {
-			ctx.CurrentOrg = *c.Platform.OrgInfo
-		}
-
+		// TODO ??? need git userinfo from git ???
 		if _, err := os.Stat(".git"); err == nil {
 			// fetch host from git remote url
 			info, err := utils.GetWorkspaceInfo(Remote)
@@ -237,7 +267,7 @@ func parseCtx() error {
 						}
 					}
 
-					ctx.CurrentOrg = OrgInfo{0, info.Org, ""}
+					//ctx.CurrentOrg = OrgInfo{0, info.Org, ""}
 				} else {
 					if !strings.Contains(host, info.Host) {
 						fmt.Println(color_str.Yellow(
@@ -276,33 +306,33 @@ func parseCtx() error {
 	return nil
 }
 
-func fetchOrgIdByName(orgName string) (apistructs.OrgFetchResponse, error) {
-	var b bytes.Buffer
-	response, err := ctx.Get().Path(fmt.Sprintf("/api/orgs/%s", orgName)).Do().Body(&b)
-	if err != nil {
-		return apistructs.OrgFetchResponse{}, err
-	}
-
-	if !response.IsOK() {
-		return apistructs.OrgFetchResponse{}, fmt.Errorf(utils.FormatErrMsg("get organization detail",
-			fmt.Sprintf("failed to request, status-code: %d, content-type: %s, raw bod: %s",
-				response.StatusCode(), response.ResponseHeader("Content-Type"), b.String()), false))
-	}
-
-	var resp apistructs.OrgFetchResponse
-	if err := json.Unmarshal(b.Bytes(), &resp); err != nil {
-		return apistructs.OrgFetchResponse{}, fmt.Errorf(utils.FormatErrMsg("get organization detail",
-			fmt.Sprintf("failed to unmarshal organization detail response ("+err.Error()+")"), false))
-	}
-
-	if !resp.Success {
-		return resp, fmt.Errorf(utils.FormatErrMsg("get organization detail",
-			fmt.Sprintf("failed to request, error code: %s, error message: %s",
-				resp.Error.Code, resp.Error.Msg), false))
-	}
-
-	return resp, nil
-}
+//func fetchOrgIdByName(orgName string) (apistructs.OrgFetchResponse, error) {
+//	var b bytes.Buffer
+//	response, err := ctx.Get().Path(fmt.Sprintf("/api/orgs/%s", orgName)).Do().Body(&b)
+//	if err != nil {
+//		return apistructs.OrgFetchResponse{}, err
+//	}
+//
+//	if !response.IsOK() {
+//		return apistructs.OrgFetchResponse{}, fmt.Errorf(utils.FormatErrMsg("get organization detail",
+//			fmt.Sprintf("failed to request, status-code: %d, content-type: %s, raw bod: %s",
+//				response.StatusCode(), response.ResponseHeader("Content-Type"), b.String()), false))
+//	}
+//
+//	var resp apistructs.OrgFetchResponse
+//	if err := json.Unmarshal(b.Bytes(), &resp); err != nil {
+//		return apistructs.OrgFetchResponse{}, fmt.Errorf(utils.FormatErrMsg("get organization detail",
+//			fmt.Sprintf("failed to unmarshal organization detail response ("+err.Error()+")"), false))
+//	}
+//
+//	if !resp.Success {
+//		return resp, fmt.Errorf(utils.FormatErrMsg("get organization detail",
+//			fmt.Sprintf("failed to request, error code: %s, error message: %s",
+//				resp.Error.Code, resp.Error.Msg), false))
+//	}
+//
+//	return resp, nil
+//}
 
 func fetchGitCredentialStorage() string {
 	c, err := exec.Command("git", "config", "credential.helper").Output()

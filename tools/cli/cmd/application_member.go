@@ -29,7 +29,7 @@ var APPLICATIONMEMBER = command.Command{
 	Name:       "member",
 	ParentName: "APPLICATION",
 	ShortHelp:  "display members of the application",
-	Example:    "$ erda-cli application member --org=<name>",
+	Example:    "$ erda-cli application member --application=<name>",
 	Flags: []command.Flag{
 		command.BoolFlag{Short: "", Name: "no-headers", Doc: "if true, don't print headers (default print headers)", DefaultValue: false},
 		command.Uint64Flag{Short: "", Name: "org-id", Doc: "the id of an organization", DefaultValue: 0},

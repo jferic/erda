@@ -16,52 +16,68 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+
+	"github.com/pkg/errors"
 
 	"github.com/erda-project/erda/tools/cli/command"
 	"github.com/erda-project/erda/tools/cli/common"
 	"github.com/erda-project/erda/tools/cli/utils"
 )
 
-var PROJECTINSPECT = command.Command{
-	Name:       "inspect",
+var PROJECTINIT = command.Command{
+	Name:       "init",
 	ParentName: "PROJECT",
 	ShortHelp:  "inspect project detail information",
 	Example:    "$ erda-cli project inspect --project=<name>",
 	Flags: []command.Flag{
-		command.Uint64Flag{Short: "", Name: "org-id", Doc: "the id of an organization", DefaultValue: 0},
-		command.Uint64Flag{Short: "", Name: "project-id", Doc: "the id of a project", DefaultValue: 0},
 		command.StringFlag{Short: "", Name: "org", Doc: "the name of an organization", DefaultValue: ""},
 		command.StringFlag{Short: "", Name: "project", Doc: "the name of a project", DefaultValue: ""},
 	},
-	Run: InspectProject,
+	Run: ProjectInit,
 }
 
-func InspectProject(ctx *command.Context, orgId, projectId uint64, org, project string) error {
-	checkOrgParam(org, orgId)
-	checkProjectParam(project, projectId)
+func ProjectInit(ctx *command.Context, org, project string) error {
+	_, _, err := command.GetProjectConfig()
+	if err == nil {
+		return errors.New("project already inited.")
+	} else if err != utils.NotExist {
+		return err
+	}
 
-	orgId, err := getOrgId(ctx, org, orgId)
+	o, err := common.GetOrgDetail(ctx, org)
 	if err != nil {
 		return err
 	}
 
-	projectId, err = getProjectId(ctx, orgId, project, projectId)
+	pId, err := common.GetProjectIdByName(ctx, o.ID, project)
 	if err != nil {
 		return err
 	}
 
-	p, err := common.GetProjectDetail(ctx, orgId, projectId)
+	pInfo := command.ProjectInfo{
+		command.ConfigVersion,
+		ctx.CurrentOpenApiHost, // TODO
+		org,
+		o.ID,
+		project,
+		pId,
+	}
+
+	for _, d := range []string{
+		fmt.Sprintf("%s", utils.GlobalErdaDir),
+	} {
+		err = os.MkdirAll(d, 0755)
+		if err != nil {
+			return err
+		}
+	}
+
+	err = command.SetProjectConfig(".erda.d/config", &pInfo)
 	if err != nil {
 		return err
 	}
-
-	s, err := utils.Marshal(p)
-	if err != nil {
-		return fmt.Errorf(utils.FormatErrMsg("project inspect",
-			"failed to prettyjson marshal project data ("+err.Error()+")", false))
-	}
-
-	fmt.Println(string(s))
+	ctx.Succ("Project '%s' cloned.", project)
 
 	return nil
 }

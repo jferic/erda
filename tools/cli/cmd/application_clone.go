@@ -15,15 +15,18 @@
 package cmd
 
 import (
+	"fmt"
+	"net/url"
+
 	"github.com/erda-project/erda/tools/cli/command"
 	"github.com/erda-project/erda/tools/cli/common"
 )
 
-var APPLICATIONOPEN = command.Command{
-	Name:       "open",
+var APPLICATIONCLONE = command.Command{
+	Name:       "clone",
 	ParentName: "APPLICATION",
-	ShortHelp:  "open the application page in browser",
-	Example:    "$ erda-cli application open --application=<name>",
+	ShortHelp:  "clone the application",
+	Example:    "$ erda-cli application clone --application=<name>",
 	Flags: []command.Flag{
 		command.Uint64Flag{Short: "", Name: "org-id", Doc: "the id of an organization", DefaultValue: 0},
 		command.Uint64Flag{Short: "", Name: "project-id", Doc: "the id of a project", DefaultValue: 0},
@@ -32,10 +35,10 @@ var APPLICATIONOPEN = command.Command{
 		command.StringFlag{Short: "", Name: "project", Doc: "the name of a project", DefaultValue: ""},
 		command.StringFlag{Short: "", Name: "application", Doc: "the name of an application ", DefaultValue: ""},
 	},
-	Run: ApplicationOpen,
+	Run: ApplicationClone,
 }
 
-func ApplicationOpen(ctx *command.Context, orgId, projectId, applicationId uint64, org, project, application string) error {
+func ApplicationClone(ctx *command.Context, orgId, projectId, applicationId uint64, org, project, application string) error {
 	checkOrgParam(org, orgId)
 	checkProjectParam(project, projectId)
 
@@ -54,11 +57,20 @@ func ApplicationOpen(ctx *command.Context, orgId, projectId, applicationId uint6
 		return err
 	}
 
-	err = common.Open(ctx, common.AppEntity, org, orgId, projectId, applicationId)
+	a, err := common.GetApplicationDetail(ctx, orgId, projectId, applicationId)
 	if err != nil {
 		return err
 	}
 
-	ctx.Succ("Open application in browser.")
+	u, err := url.Parse(ctx.CurrentOpenApiHost)
+	if err != nil {
+		return err
+	}
+
+	repo := fmt.Sprintf("%s://%s", u.Scheme, a.GitRepoNew)
+
+	cloneApplication(a, repo)
+
+	ctx.Succ("Application '%s' cloned.", a.Name)
 	return nil
 }
