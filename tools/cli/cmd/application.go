@@ -19,14 +19,13 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/pkg/errors"
-
 	"github.com/erda-project/erda/apistructs"
 	"github.com/erda-project/erda/modules/core-services/types"
 	"github.com/erda-project/erda/pkg/terminal/table"
 	"github.com/erda-project/erda/tools/cli/command"
 	"github.com/erda-project/erda/tools/cli/common"
 	"github.com/erda-project/erda/tools/cli/utils"
+	"github.com/pkg/errors"
 )
 
 var APPLICATION = command.Command{
@@ -133,6 +132,7 @@ func getApplicationId(ctx *command.Context, orgId, projectId uint64, application
 		}
 		applicationId = appId
 	}
+
 	if applicationId <= 0 && ctx.CurrentApplication.ID <= 0 {
 		return applicationId, errors.New("Invalid application id")
 	}

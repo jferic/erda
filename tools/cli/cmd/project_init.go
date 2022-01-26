@@ -56,12 +56,21 @@ func ProjectInit(ctx *command.Context, org, project string) error {
 	}
 
 	pInfo := command.ProjectInfo{
-		command.ConfigVersion,
-		ctx.CurrentOpenApiHost, // TODO
-		org,
-		o.ID,
-		project,
-		pId,
+		Version:   command.ConfigVersion,
+		Server:    ctx.CurrentOpenApiHost,
+		Org:       org,
+		OrgId:     o.ID,
+		Project:   project,
+		ProjectId: pId,
+	}
+
+	appList, err := common.GetApplications(ctx, o.ID, pId)
+	if err != nil {
+		return err
+	}
+	for _, a := range appList {
+		aInfo := command.ApplicationInfo{a.Name, a.ID}
+		pInfo.Applications = append(pInfo.Applications, aInfo)
 	}
 
 	for _, d := range []string{

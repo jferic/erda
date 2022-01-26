@@ -45,6 +45,7 @@ type Context struct {
 	CurrentOrg         OrgInfo
 	CurrentProject     ProjectInfo2
 	CurrentApplication ApplicationInfo2
+	Applications       []ApplicationInfo2
 	Debug              bool
 	Token              string // uc token
 	HttpClient         *httpclient.HTTPClient

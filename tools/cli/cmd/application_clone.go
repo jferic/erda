@@ -18,6 +18,9 @@ import (
 	"fmt"
 	"net/url"
 
+	"github.com/erda-project/erda/tools/cli/utils"
+	"github.com/pkg/errors"
+
 	"github.com/erda-project/erda/tools/cli/command"
 	"github.com/erda-project/erda/tools/cli/common"
 )
@@ -69,7 +72,19 @@ func ApplicationClone(ctx *command.Context, orgId, projectId, applicationId uint
 
 	repo := fmt.Sprintf("%s://%s", u.Scheme, a.GitRepoNew)
 
-	cloneApplication(a, repo)
+	_, pInfo, err := command.GetProjectConfig()
+	if err != nil {
+		if err == utils.NotExist {
+			return errors.New("current workspace is not an erda project.")
+		}
+		return err
+	}
+
+	dir := a.Name
+	err = cloneApplication(pInfo, a, repo, dir)
+	if err != nil {
+		return err
+	}
 
 	ctx.Succ("Application '%s' cloned.", a.Name)
 	return nil

@@ -52,8 +52,15 @@ func ApplicationCreate(ctx *command.Context, projectId uint64, project, name, mo
 		return err
 	}
 
+	config, pInfo, err := command.GetProjectConfig()
+	if err == utils.NotExist {
+		return errors.New("Not in a project directory")
+	} else if err != nil {
+		return err
+	}
+
 	// TODO get project by id
-	projectId, err := getProjectId(ctx, ctx.CurrentOrg.ID, project, projectId)
+	projectId, err = getProjectId(ctx, ctx.CurrentOrg.ID, project, projectId)
 	if err != nil {
 		return err
 	}
@@ -91,15 +98,11 @@ func ApplicationCreate(ctx *command.Context, projectId uint64, project, name, mo
 	}
 
 	// TODO clone project into pwd
-	pInfo := command.ProjectInfo{
-		Version:   command.ConfigVersion,
-		Server:    ctx.CurrentOpenApiHost,
-		Org:       ctx.CurrentOrg.Name,
-		OrgId:     ctx.CurrentOrg.ID,
-		ProjectId: ctx.CurrentProject.ID,
-		Project:   ctx.CurrentProject.Name,
-	}
-	err = createApplicationDir(pInfo, response.Data.Name, response.Data.ID)
+	pInfo.Applications = append(pInfo.Applications, command.ApplicationInfo{
+		response.Data.Name, response.Data.ID,
+	})
+
+	err = command.SetProjectConfig(config, pInfo)
 	if err != nil {
 		return err
 	}

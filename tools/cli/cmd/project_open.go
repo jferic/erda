@@ -52,6 +52,9 @@ func ProjectOpen(ctx *command.Context, orgId, projectId uint64, org, project str
 		return err
 	}
 
-	ctx.Succ("Open project in browser.")
+	if project == "" {
+		project = ctx.CurrentProject.Name
+	}
+	ctx.Succ("Open project '%s' in browser.", project)
 	return nil
 }
