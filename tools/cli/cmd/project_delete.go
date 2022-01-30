@@ -25,10 +25,10 @@ var PROJECTDELETE = command.Command{
 	ShortHelp:  "delete project",
 	Example:    "erda-cli project delete --project-id=<id>",
 	Flags: []command.Flag{
-		command.StringFlag{Short: "", Name: "org", Doc: "the name of an organization ", DefaultValue: ""},
-		command.StringFlag{Short: "", Name: "project", Doc: "the name of a project", DefaultValue: ""},
-		command.Uint64Flag{Short: "", Name: "org-id", Doc: "the id of an organization ", DefaultValue: 0},
-		command.Uint64Flag{Short: "", Name: "project-id", Doc: "the id of a project ", DefaultValue: 0},
+		//command.StringFlag{Short: "", Name: "org", Doc: "the name of an organization ", DefaultValue: ""},
+		//command.StringFlag{Short: "", Name: "project", Doc: "the name of a project", DefaultValue: ""},
+		//command.Uint64Flag{Short: "", Name: "org-id", Doc: "the id of an organization ", DefaultValue: 0},
+		//command.Uint64Flag{Short: "", Name: "project-id", Doc: "the id of a project ", DefaultValue: 0},
 		command.BoolFlag{Short: "", Name: "clear", Doc: "if true, clear runtimes and addon first", DefaultValue: false},
 		command.IntFlag{Short: "", Name: "wait-runtime", Doc: "minutes to wait runtimes deleted", DefaultValue: 3},
 		command.IntFlag{Short: "", Name: "wait-addon", Doc: "minutes to wait addons deleted", DefaultValue: 3},
@@ -36,16 +36,20 @@ var PROJECTDELETE = command.Command{
 	Run: ProjectDelete,
 }
 
-func ProjectDelete(ctx *command.Context, org, project string, orgId, projectId uint64, clear bool, waitRuntime, waitAddon int) error {
-	checkOrgParam(org, orgId)
-	checkProjectParam(project, projectId)
+func ProjectDelete(ctx *command.Context, //org, project string, orgId, projectId uint64,
+	clear bool, waitRuntime, waitAddon int) error {
+	//checkOrgParam(org, orgId)
+	//checkProjectParam(project, projectId)
 
-	orgId, err := getOrgId(ctx, org, orgId)
+	var org, project string
+	var orgId, projectId uint64
+
+	org, orgId, err := getOrgId(ctx, org, orgId)
 	if err != nil {
 		return err
 	}
 
-	projectId, err = getProjectId(ctx, orgId, project, projectId)
+	project, projectId, err = getProjectId(ctx, orgId, project, projectId)
 	if err != nil {
 		return err
 	}

@@ -38,12 +38,13 @@ import (
 )
 
 var (
-	host        string // erda host, format: http[s]://<domain> eg: https://erda.cloud
-	Remote      string // git remote name for erda repo
-	username    string
-	password    string
-	debugMode   bool
-	Interactive bool
+	host         string // erda host, format: http[s]://<domain> eg: https://erda.cloud
+	Remote       string // git remote name for erda repo
+	username     string
+	password     string
+	debugMode    bool
+	Interactive  bool
+	IsCompletion bool
 )
 
 // Cmds which not require login
@@ -80,78 +81,73 @@ var RootCmd = &cobra.Command{
  _/             _/    _/      _/    _/      _/    _/     
 _/_/_/_/       _/    _/      _/_/_/        _/    _/      
 `,
-	SilenceUsage: true,
-	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		logrus.SetOutput(os.Stdout)
-		defer func() {
-			cmd.SilenceErrors = true
-		}()
+	SilenceUsage:      true,
+	PersistentPreRunE: PrepareCtx,
+}
 
-		ctx.Debug = debugMode
-		httpOption := []httpclient.OpOption{httpclient.WithCompleteRedirect()}
-		if debugMode {
-			logrus.SetLevel(logrus.DebugLevel)
-			httpOption = append(httpOption, httpclient.WithDebug(os.Stdout))
-		} else if Interactive {
-			httpOption = append(httpOption, httpclient.WithLoadingPrint(""))
-		}
-		if strings.HasPrefix(host, "https") {
-			httpOption = append(httpOption, httpclient.WithHTTPS())
-		}
-		ctx.HttpClient = httpclient.New(httpOption...)
-
-		u, err := getFullUse(cmd)
-		if err != nil {
-			err = fmt.Errorf(color_str.Red("✗ ") + err.Error())
+func PrepareCtx(cmd *cobra.Command, args []string) error {
+	logrus.SetOutput(os.Stdout)
+	var err error
+	defer func() {
+		cmd.SilenceErrors = true
+	}()
+	defer func() {
+		if !IsCompletion && err != nil {
 			fmt.Println(err)
-			return err
 		}
+	}()
 
-		// For completion zsh etc.
-		if strings.HasPrefix(u, "completion ") || strings.HasPrefix(u, "__complete") {
+	ctx.Debug = debugMode
+	httpOption := []httpclient.OpOption{httpclient.WithCompleteRedirect()}
+	if debugMode {
+		logrus.SetLevel(logrus.DebugLevel)
+		httpOption = append(httpOption, httpclient.WithDebug(os.Stdout))
+	} else if Interactive {
+		httpOption = append(httpOption, httpclient.WithLoadingPrint(""))
+	}
+	if strings.HasPrefix(host, "https") {
+		httpOption = append(httpOption, httpclient.WithHTTPS())
+	}
+	ctx.HttpClient = httpclient.New(httpOption...)
+
+	u, err := getFullUse(cmd)
+	if err != nil {
+		err = fmt.Errorf(color_str.Red("✗ ") + err.Error())
+		return err
+	}
+
+	// For completion zsh etc.
+	if strings.HasPrefix(u, "completion ") || strings.HasPrefix(u, "__complete") {
+		return nil
+	}
+	for _, w := range loginWhiteList {
+		if w == u {
 			return nil
 		}
-		for _, w := range loginWhiteList {
-			if w == u {
-				return nil
-			}
-		}
+	}
 
-		if strings.HasPrefix(u, "clone") {
-			u, err := url.Parse(args[0])
-			if err != nil {
-				return err
-			}
-			host = fmt.Sprintf("%s://%s", u.Scheme, u.Host)
-		}
-
-		// parse and use context according to host param or config file
-		if err := parseCtx(); err != nil {
-			err = fmt.Errorf(color_str.Red("✗ ") + err.Error())
-			fmt.Println("xxx", err)
-			return err
-		}
-
-		sessionInfos, err := ensureSessionInfos()
+	if strings.HasPrefix(u, "clone") {
+		u, err := url.Parse(args[0])
 		if err != nil {
-			err = fmt.Errorf(color_str.Red("✗ ") + err.Error())
-			fmt.Println(err)
 			return err
 		}
-		ctx.Sessions = sessionInfos
+		host = fmt.Sprintf("%s://%s", u.Scheme, u.Host)
+	}
 
-		// Get OrgInfo after login with info in git repository
-		//if ctx.CurrentOrg.Name != "" && ctx.CurrentOrg.ID == 0 {
-		//	resp, err := fetchOrgIdByName(ctx.CurrentOrg.Name)
-		//	if err != nil {
-		//		return err
-		//	}
-		//	ctx.CurrentOrg.ID = resp.Data.ID
-		//	ctx.CurrentOrg.Desc = resp.Data.Desc
-		//}
+	// parse and use context according to host param or config file
+	if err := parseCtx(); err != nil {
+		err = fmt.Errorf(color_str.Red("✗ ") + err.Error())
+		return err
+	}
 
-		return nil
-	},
+	sessionInfos, err := ensureSessionInfos()
+	if err != nil {
+		err = fmt.Errorf(color_str.Red("✗ ") + err.Error())
+		return err
+	}
+	ctx.Sessions = sessionInfos
+
+	return nil
 }
 
 func getFullUse(cmd *cobra.Command) (string, error) {
@@ -175,29 +171,36 @@ func ensureSessionInfos() (map[string]status.StatusInfo, error) {
 		return nil, err
 	}
 	// file ~/.erda.d/sessions exist & and session for host also exist; otherwise need login fisrt
-	if currentSession, ok := sessionInfos[ctx.CurrentOpenApiHost]; ok {
+	currentSession, ok := sessionInfos[ctx.CurrentOpenApiHost]
+	if ok {
 		// check session if expired
 		if currentSession.ExpiredAt != nil && time.Now().Before(*currentSession.ExpiredAt) {
 			return sessionInfos, nil
 		}
 	}
 
-	if username == "" {
-		username = utils.InputNormal("Enter your erda username: ")
-	}
-	if password == "" {
-		password = utils.InputPWD("Enter your erda password: ")
-	}
-
-	// fetch session & user info according to host, username & password
-	if err = loginAndStoreSession(ctx.CurrentOpenApiHost, username, password); err != nil {
-		return nil, err
+	if Interactive {
+		if username == "" {
+			username = utils.InputNormal("Enter your erda username: ")
+		}
+		if password == "" {
+			password = utils.InputPWD("Enter your erda password: ")
+		}
 	}
 
-	// fetch sessions again
-	sessionInfos, err = status.GetSessionInfos()
-	if err != nil {
-		return nil, err
+	if username != "" && password != "" {
+		// fetch session & user info according to host, username & password
+		if err = loginAndStoreSession(ctx.CurrentOpenApiHost, username, password); err != nil {
+			return nil, err
+		}
+
+		// fetch sessions again
+		sessionInfos, err = status.GetSessionInfos()
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		return nil, errors.Errorf("session expired at %s", currentSession.ExpiredAt.String())
 	}
 
 	return sessionInfos, nil
@@ -261,9 +264,13 @@ func parseCtx() error {
 		}
 
 		if host == "" {
-			// fetch host from stdin
-			fmt.Print("Enter a erda host: ")
-			fmt.Scanln(&host)
+			if Interactive {
+				// fetch host from stdin
+				fmt.Print("Enter a erda host: ")
+				fmt.Scanln(&host)
+			} else {
+				return errors.New("Not set a erda host")
+			}
 		}
 	}
 	slashIndex := strings.Index(host, "://")

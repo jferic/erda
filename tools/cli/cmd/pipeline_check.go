@@ -20,6 +20,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/spf13/cobra"
+
 	"github.com/erda-project/erda/pkg/parser/pipelineyml"
 	"github.com/erda-project/erda/pkg/terminal/color_str"
 	"github.com/erda-project/erda/tools/cli/command"
@@ -29,15 +31,26 @@ var PIPELINECHECK = command.Command{
 	Name:       "check",
 	ParentName: "PIPELINE",
 	ShortHelp:  "validate pipeline.yml",
-	Example:    "$ erda-cli pipeline check -f .dice/pipelines/pipeline.yml",
+	Example:    "$ erda-cli pipeline check -f .erda/pipelines/pipeline.yml",
 	Flags: []command.Flag{
 		command.StringFlag{
 			"f",
-			"file",
+			"filename",
 			"specify the path of pipeline.yml file",
-			".dice/pipelines/pipeline.yml"},
+			".erda/pipelines/pipeline.yml"},
 	},
-	Run: PipelineCheck,
+	RegisterFlagCompletionFunc: map[string]interface{}{"filename": YmlCompletion},
+	Run:                        PipelineCheck,
+}
+
+func YmlCompletion(ctx *cobra.Command, args []string, toComplete string, filename string) []string {
+	comps := []string{}
+
+	p, err := getWorkspacePipelines()
+	if err == nil {
+		comps = p
+	}
+	return comps
 }
 
 func PipelineCheck(ctx *command.Context, ymlfile string) error {

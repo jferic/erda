@@ -35,17 +35,23 @@ var PROJECT = command.Command{
 	Example:   "$ erda-cli project",
 	Flags: []command.Flag{
 		command.BoolFlag{Short: "", Name: "no-headers", Doc: "if true, don't print headers (default print headers)", DefaultValue: false},
-		command.Uint64Flag{Short: "", Name: "org-id", Doc: "the id of an organization ", DefaultValue: 0},
-		command.StringFlag{Short: "", Name: "org", Doc: "the name of an organization ", DefaultValue: ""},
+		//command.Uint64Flag{Short: "", Name: "org-id", Doc: "the id of an organization ", DefaultValue: 0},
+		//command.StringFlag{Short: "", Name: "org", Doc: "the name of an organization ", DefaultValue: ""},
 		command.IntFlag{Short: "", Name: "page-size", Doc: "the number of page size", DefaultValue: 10},
 		command.BoolFlag{Short: "", Name: "with-owner", Doc: "if true, return owners of projects", DefaultValue: false},
 	},
 	Run: GetProjects,
 }
 
-func GetProjects(ctx *command.Context, noHeaders bool, orgId uint64, org string, pageSize int, withOwner bool) error {
-	checkOrgParam(org, orgId)
-	orgId, err := getOrgId(ctx, org, orgId)
+func GetProjects(ctx *command.Context, noHeaders bool, // orgId uint64, org string,
+	pageSize int, withOwner bool) error {
+
+	//checkOrgParam(org, orgId)
+
+	var org string
+	var orgId uint64
+
+	org, orgId, err := getOrgId(ctx, org, orgId)
 	if err != nil {
 		return err
 	}
@@ -59,7 +65,12 @@ func GetProjects(ctx *command.Context, noHeaders bool, orgId uint64, org string,
 
 		data := [][]string{}
 		for _, p := range pagingProject.List {
+			current := " "
+			if p.Name == ctx.CurrentProject.Name {
+				current = "*"
+			}
 			line := []string{
+				current,
 				strconv.FormatUint(p.ID, 10),
 				p.Name,
 				p.DisplayName,
@@ -85,7 +96,7 @@ func GetProjects(ctx *command.Context, noHeaders bool, orgId uint64, org string,
 		t := table.NewTable()
 		if !noHeaders {
 			headers := []string{
-				"ProjectID", "Name", "DisplayName",
+				"Current", "ProjectID", "Name", "DisplayName",
 			}
 			if withOwner {
 				headers = append(headers, "Owner")
@@ -109,24 +120,32 @@ func GetProjects(ctx *command.Context, noHeaders bool, orgId uint64, org string,
 	return nil
 }
 
-func getProjectId(ctx *command.Context, orgId uint64, project string, projectId uint64) (uint64, error) {
+func getProjectId(ctx *command.Context, orgId uint64, project string, projectId uint64) (string, uint64, error) {
 	if project != "" {
 		pId, err := common.GetProjectIdByName(ctx, orgId, project)
 		if err != nil {
-			return projectId, err
+			return project, projectId, err
 		}
 		projectId = pId
 	}
 
+	if project == "" && ctx.CurrentProject.Name == "" {
+		return project, projectId, errors.New("Invalid project name")
+	}
+
+	if project == "" && ctx.CurrentProject.Name != "" {
+		project = ctx.CurrentProject.Name
+	}
+
 	if projectId <= 0 && ctx.CurrentProject.ID <= 0 {
-		return projectId, errors.New("Invalid project id")
+		return project, projectId, errors.New("Invalid project id")
 	}
 
 	if projectId == 0 && ctx.CurrentProject.ID > 0 {
 		projectId = ctx.CurrentProject.ID
 	}
 
-	return projectId, nil
+	return project, projectId, nil
 }
 
 func checkProjectParam(project string, projectId uint64) {

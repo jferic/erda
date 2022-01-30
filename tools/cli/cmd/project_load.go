@@ -81,12 +81,12 @@ func ProjectLoad(ctx *command.Context, orgId, projectId uint64, org, project, co
 		}
 	}
 
-	orgId, err := getOrgId(ctx, org, orgId)
+	org, orgId, err := getOrgId(ctx, org, orgId)
 	if err != nil {
 		return err
 	}
 
-	projectId, err = getProjectId(ctx, orgId, project, projectId)
+	project, projectId, err = getProjectId(ctx, orgId, project, projectId)
 	if err != nil {
 		return err
 	}

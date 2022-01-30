@@ -208,6 +208,8 @@ github.com/alibabacloud-go/tea-utils v1.3.9 h1:TtbzxS+BXrisA7wzbAMRtlU8A2eWLg0uf
 github.com/alibabacloud-go/tea-utils v1.3.9/go.mod h1:EI/o33aBfj3hETm4RLiAxF/ThQdSngxrpF8rKUDJjPE=
 github.com/aliyun/alibaba-cloud-sdk-go v1.61.426 h1:VjAbjrNZy0Z+jQalse4C2/V2MdXOvcfsQuOtEGqOBrg=
 github.com/aliyun/alibaba-cloud-sdk-go v1.61.426/go.mod h1:pUKYbK5JQ+1Dfxk80P0qxGqe5dkxDoabbZS7zOcouyA=
+github.com/aliyun/alibaba-cloud-sdk-go v1.61.1473 h1:rUoiu7Duq0hr4mjlQWZMORKaCbNXaYvYN2HFJQt228E=
+github.com/aliyun/alibaba-cloud-sdk-go v1.61.1473/go.mod h1:RcDobYh8k5VP6TNybz9m++gL3ijVI5wueVr0EM10VsU=
 github.com/aliyun/aliyun-log-go-sdk v0.1.19 h1:7lNg5wOQqeOTIAQJjkfYj8zmRuJd4Dt6m6Kg90oYLlk=
 github.com/aliyun/aliyun-log-go-sdk v0.1.19/go.mod h1:arjbKu+pwifPdi8tMJSJtFszZlxs+6F34VPv+ecf3zA=
 github.com/aliyun/aliyun-mns-go-sdk v0.0.0-20210305050620-d1b5875bda58 h1:hX1oYyN7d0y7GHwli6trhovosNAKo9f60uC3FPHMjoQ=

@@ -30,12 +30,12 @@ var PROJECTCLEAR = command.Command{
 	Name:       "clear",
 	ParentName: "PROJECT",
 	ShortHelp:  "clear project by delete runtimes and addons",
-	Example:    "$ erda-cli project clear --project-id=<id> --workspace=<ENV>",
+	Example:    "$ erda-cli project clear --workspace=<ENV>",
 	Flags: []command.Flag{
-		command.Uint64Flag{Short: "", Name: "org-id", Doc: "the id of an organization", DefaultValue: 0},
-		command.Uint64Flag{Short: "", Name: "project-id", Doc: "the id of a project", DefaultValue: 0},
-		command.StringFlag{Short: "", Name: "org", Doc: "the name of an organization", DefaultValue: ""},
-		command.StringFlag{Short: "", Name: "project", Doc: "the name of a project", DefaultValue: ""},
+		//command.Uint64Flag{Short: "", Name: "org-id", Doc: "the id of an organization", DefaultValue: 0},
+		//command.Uint64Flag{Short: "", Name: "project-id", Doc: "the id of a project", DefaultValue: 0},
+		//command.StringFlag{Short: "", Name: "org", Doc: "the name of an organization", DefaultValue: ""},
+		//command.StringFlag{Short: "", Name: "project", Doc: "the name of a project", DefaultValue: ""},
 		command.StringFlag{Short: "", Name: "workspace", Doc: "the env workspace of a project, if set only clear runtimes and addons in the specific workspace", DefaultValue: ""},
 		command.IntFlag{Short: "", Name: "wait-runtime", Doc: "minutes to wait runtimes deleted", DefaultValue: 3},
 		command.IntFlag{Short: "", Name: "wait-addon", Doc: "minutes to wait addons deleted", DefaultValue: 3},
@@ -45,7 +45,8 @@ var PROJECTCLEAR = command.Command{
 	Run: ClearProject,
 }
 
-func ClearProject(ctx *command.Context, orgId, projectId uint64, org, project, workspace string, waitRuntime, waitAddon int, deleteApps, deleteCAs bool) error {
+func ClearProject(ctx *command.Context, //orgId, projectId uint64, org, project,
+	workspace string, waitRuntime, waitAddon int, deleteApps, deleteCAs bool) error {
 	if workspace != "" {
 		if !apistructs.WorkSpace(workspace).Valide() {
 			return errors.New(fmt.Sprintf("Invalide workspace %s, should be one in %s",
@@ -56,15 +57,17 @@ func ClearProject(ctx *command.Context, orgId, projectId uint64, org, project, w
 		return errors.New("Should not both set --workspace and --deleteApps")
 	}
 
-	checkOrgParam(org, orgId)
-	checkProjectParam(project, projectId)
+	//checkOrgParam(org, orgId)
+	//checkProjectParam(project, projectId)
+	var org, project string
+	var orgId, projectId uint64
 
-	orgId, err := getOrgId(ctx, org, orgId)
+	org, orgId, err := getOrgId(ctx, org, orgId)
 	if err != nil {
 		return err
 	}
 
-	projectId, err = getProjectId(ctx, orgId, project, projectId)
+	project, projectId, err = getProjectId(ctx, orgId, project, projectId)
 	if err != nil {
 		return err
 	}

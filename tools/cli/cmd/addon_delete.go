@@ -28,8 +28,8 @@ var ADDONDELETE = command.Command{
 	ShortHelp:  "delete addon",
 	Example:    "$ erda-cli addon delete --addon-id=<id>",
 	Flags: []command.Flag{
-		command.Uint64Flag{Short: "", Name: "org-id", Doc: "the id of an organization", DefaultValue: 0},
-		command.StringFlag{Short: "", Name: "org", Doc: "the name of an organization", DefaultValue: ""},
+		//command.Uint64Flag{Short: "", Name: "org-id", Doc: "the id of an organization", DefaultValue: 0},
+		//command.StringFlag{Short: "", Name: "org", Doc: "the name of an organization", DefaultValue: ""},
 		command.StringFlag{Short: "", Name: "addon-id", Doc: "the id of an addon", DefaultValue: ""},
 		command.BoolFlag{Short: "", Name: "wait-delete", Doc: "if true, wait addon to be deleted", DefaultValue: false},
 		command.IntFlag{Short: "", Name: "wait-minutes", Doc: "minutes to wait addon to be deleted", DefaultValue: 3},
@@ -37,9 +37,14 @@ var ADDONDELETE = command.Command{
 	Run: DeleteAddon,
 }
 
-func DeleteAddon(ctx *command.Context, orgId uint64, org string, addonId string, waitDelete bool, waitMinutes int) error {
-	checkOrgParam(org, orgId)
-	orgId, err := getOrgId(ctx, org, orgId)
+func DeleteAddon(ctx *command.Context, //orgId uint64, org string,
+	addonId string, waitDelete bool, waitMinutes int) error {
+	//checkOrgParam(org, orgId)
+
+	var org string
+	var orgId uint64
+
+	org, orgId, err := getOrgId(ctx, org, orgId)
 	if err != nil {
 		return err
 	}

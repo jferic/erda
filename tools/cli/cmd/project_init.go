@@ -28,7 +28,7 @@ import (
 var PROJECTINIT = command.Command{
 	Name:       "init",
 	ParentName: "PROJECT",
-	ShortHelp:  "inspect project detail information",
+	ShortHelp:  "init project",
 	Example:    "$ erda-cli project inspect --project=<name>",
 	Flags: []command.Flag{
 		command.StringFlag{Short: "", Name: "org", Doc: "the name of an organization", DefaultValue: ""},

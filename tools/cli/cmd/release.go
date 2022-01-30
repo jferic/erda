@@ -41,7 +41,7 @@ var RELEASE = command.Command{
 func ReleaseList(ctx *command.Context, noHeaders bool, orgId, applicationId uint64, org, branch string, isVersin bool) error {
 	checkOrgParam(org, orgId)
 
-	orgId, err := getOrgId(ctx, org, orgId)
+	org, orgId, err := getOrgId(ctx, org, orgId)
 	if err != nil {
 		return err
 	}

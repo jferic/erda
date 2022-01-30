@@ -31,10 +31,10 @@ var ADDONCREATE = command.Command{
 	ShortHelp:  "create addon",
 	Example:    "$ erda-cli addon create --project=<name> --workspace=<DEV/TEST/STAGING/PROD> --addon-type=<erda/custom> --addon-name=<custom/aliyun-rds>",
 	Flags: []command.Flag{
-		command.Uint64Flag{Short: "", Name: "org-id", Doc: "the id of an organization", DefaultValue: 0},
-		command.Uint64Flag{Short: "", Name: "project-id", Doc: "the id of a project", DefaultValue: 0},
-		command.StringFlag{Short: "", Name: "org", Doc: "the name of an organization", DefaultValue: ""},
-		command.StringFlag{Short: "", Name: "project", Doc: "the name of a project", DefaultValue: ""},
+		//command.Uint64Flag{Short: "", Name: "org-id", Doc: "the id of an organization", DefaultValue: 0},
+		//command.Uint64Flag{Short: "", Name: "project-id", Doc: "the id of a project", DefaultValue: 0},
+		//command.StringFlag{Short: "", Name: "org", Doc: "the name of an organization", DefaultValue: ""},
+		//command.StringFlag{Short: "", Name: "project", Doc: "the name of a project", DefaultValue: ""},
 		command.StringFlag{Short: "", Name: "workspace", Doc: "the env workspace of an addon", DefaultValue: ""},
 		command.StringFlag{Short: "", Name: "addon-type", Doc: "the type of the addon, one of [erda|custom]", DefaultValue: "custom"},
 		command.StringFlag{Short: "", Name: "addon-name", Doc: "the name of the addon", DefaultValue: "custom"},
@@ -47,10 +47,15 @@ var ADDONCREATE = command.Command{
 	Run: AddonCreate,
 }
 
-func AddonCreate(ctx *command.Context, orgId, projectId uint64, org, project, workspace,
-	addonType, addonName, name, configs, plan string, waitMinutes int) error {
-	checkOrgParam(org, orgId)
-	checkProjectParam(project, projectId)
+func AddonCreate(ctx *command.Context, //orgId, projectId uint64, org, project,
+	workspace, addonType, addonName, name, configs, plan string, waitMinutes int) error {
+
+	//checkOrgParam(org, orgId)
+	//checkProjectParam(project, projectId)
+
+	var org, project string
+	var orgId, projectId uint64
+
 	if !apistructs.WorkSpace(workspace).Valide() {
 		return errors.New(fmt.Sprintf("Invalide workspace %s, should be one in %s",
 			workspace, apistructs.WorkSpace("").ValideList()))
@@ -59,12 +64,12 @@ func AddonCreate(ctx *command.Context, orgId, projectId uint64, org, project, wo
 		return errors.New("Invalid name for addon instance")
 	}
 
-	orgId, err := getOrgId(ctx, org, orgId)
+	org, orgId, err := getOrgId(ctx, org, orgId)
 	if err != nil {
 		return err
 	}
 
-	projectId, err = getProjectId(ctx, orgId, project, projectId)
+	project, projectId, err = getProjectId(ctx, orgId, project, projectId)
 	if err != nil {
 		return err
 	}

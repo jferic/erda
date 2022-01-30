@@ -28,24 +28,28 @@ var PROJECTINSPECT = command.Command{
 	ShortHelp:  "inspect project detail information",
 	Example:    "$ erda-cli project inspect --project=<name>",
 	Flags: []command.Flag{
-		command.Uint64Flag{Short: "", Name: "org-id", Doc: "the id of an organization", DefaultValue: 0},
-		command.Uint64Flag{Short: "", Name: "project-id", Doc: "the id of a project", DefaultValue: 0},
-		command.StringFlag{Short: "", Name: "org", Doc: "the name of an organization", DefaultValue: ""},
+		//command.Uint64Flag{Short: "", Name: "org-id", Doc: "the id of an organization", DefaultValue: 0},
+		//command.Uint64Flag{Short: "", Name: "project-id", Doc: "the id of a project", DefaultValue: 0},
+		//command.StringFlag{Short: "", Name: "org", Doc: "the name of an organization", DefaultValue: ""},
 		command.StringFlag{Short: "", Name: "project", Doc: "the name of a project", DefaultValue: ""},
 	},
-	Run: InspectProject,
+	Run: ProjectInspect,
 }
 
-func InspectProject(ctx *command.Context, orgId, projectId uint64, org, project string) error {
-	checkOrgParam(org, orgId)
-	checkProjectParam(project, projectId)
+func ProjectInspect(ctx *command.Context, project string, //orgId, projectId uint64, org, project string
+) error {
+	//checkOrgParam(org, orgId)
+	//checkProjectParam(project, projectId)
 
-	orgId, err := getOrgId(ctx, org, orgId)
+	var org string
+	var orgId, projectId uint64
+
+	org, orgId, err := getOrgId(ctx, org, orgId)
 	if err != nil {
 		return err
 	}
 
-	projectId, err = getProjectId(ctx, orgId, project, projectId)
+	project, projectId, err = getProjectId(ctx, orgId, project, projectId)
 	if err != nil {
 		return err
 	}

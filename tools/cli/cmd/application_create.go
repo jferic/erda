@@ -30,10 +30,10 @@ var APPLICATIONCREATE = command.Command{
 	Name:       "create",
 	ParentName: "APPLICATION",
 	ShortHelp:  "create application",
-	Example:    "$ erda-cli application create --project-id=<id> -n <name>",
+	Example:    "$ erda-cli application create -n <name>",
 	Flags: []command.Flag{
-		command.Uint64Flag{Short: "", Name: "project-id", Doc: "the id of a project ", DefaultValue: 0},
-		command.StringFlag{Short: "", Name: "project", Doc: "the name of a project ", DefaultValue: ""},
+		//command.Uint64Flag{Short: "", Name: "project-id", Doc: "the id of a project ", DefaultValue: 0},
+		//command.StringFlag{Short: "", Name: "project", Doc: "the name of a project ", DefaultValue: ""},
 		command.StringFlag{Short: "n", Name: "name", Doc: "the name of an application ", DefaultValue: ""},
 		command.StringFlag{Short: "m", Name: "mode",
 			Doc:          "application type, available values：LIBRARY, SERVICE, BIGDATA, PROJECT_SERVICE",
@@ -43,7 +43,8 @@ var APPLICATIONCREATE = command.Command{
 	Run: ApplicationCreate,
 }
 
-func ApplicationCreate(ctx *command.Context, projectId uint64, project, name, mode, desc string) error {
+func ApplicationCreate(ctx *command.Context, //projectId uint64, project,
+	name, mode, desc string) error {
 	if name == "" {
 		return errors.New("Invalid project name")
 	}
@@ -59,8 +60,9 @@ func ApplicationCreate(ctx *command.Context, projectId uint64, project, name, mo
 		return err
 	}
 
-	// TODO get project by id
-	projectId, err = getProjectId(ctx, ctx.CurrentOrg.ID, project, projectId)
+	var project string
+	var projectId uint64
+	project, projectId, err = getProjectId(ctx, projectId, project, projectId)
 	if err != nil {
 		return err
 	}

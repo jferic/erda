@@ -15,23 +15,28 @@
 package cmd
 
 import (
+	"strings"
+
 	"github.com/erda-project/erda/tools/cli/command"
 	"github.com/erda-project/erda/tools/cli/common"
 )
 
-var APPLICATIONDELETE = command.Command{
-	Name:       "delete",
-	ParentName: "APPLICATION",
-	ShortHelp:  "delete application",
-	Example:    "$ erda-cli application delete --application-id=<id>",
+var PROJECTPIPELINECreate = command.Command{
+	Name:       "pipeline",
+	ParentName: "PROJECTPIPELINE",
+	ShortHelp:  "create a pipeline in the project",
+	Example:    "$ erda-cli project pipeline create",
 	Flags: []command.Flag{
-		//command.Uint64Flag{Short: "", Name: "application-id", Doc: "the id of an application ", DefaultValue: 0},
-		command.StringFlag{Short: "", Name: "application", Doc: "the name of an application ", DefaultValue: ""},
+		command.StringFlag{Short: "", Name: "name", Doc: "name of the pipeline", DefaultValue: ""},
+		command.StringFlag{Short: "", Name: "application", Doc: "the name of a application", DefaultValue: ""},
+		command.StringFlag{Short: "", Name: "branch", Doc: "the branch name", DefaultValue: ""},
+		command.StringFlag{Short: "", Name: "filename", Doc: "the filename of pipeline yaml", DefaultValue: ""},
 	},
-	Run: ApplicationDelete,
+	Run: ProjectPipelineCreate,
 }
 
-func ApplicationDelete(ctx *command.Context, application string) error {
+func ProjectPipelineCreate(ctx *command.Context, name, application, branch, filename string) error {
+
 	var org, project string
 	var orgId, projectId, applicationId uint64
 
@@ -50,13 +55,18 @@ func ApplicationDelete(ctx *command.Context, application string) error {
 		return err
 	}
 
-	err = common.DeleteApplication(ctx, applicationId)
+	path := ""
+	idx := strings.LastIndex(filename, "/")
+	if idx != -1 {
+		path = filename[:idx]
+		filename = filename[idx:]
+	}
+
+	pp, err := common.CreateProjectPipeline(ctx, orgId, projectId, applicationId, name, "erda", branch, path, filename)
 	if err != nil {
 		return err
 	}
 
-	// TODO rm app in pwd ?
-
-	ctx.Succ("Application '%s' deleted.", application)
+	ctx.Succ("Project pipeline %s created", pp.Name)
 	return nil
 }

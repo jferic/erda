@@ -16,48 +16,41 @@ package cmd
 
 import (
 	"github.com/erda-project/erda/tools/cli/command"
-	"github.com/erda-project/erda/tools/cli/common"
 )
 
-var PROJECTOPEN = command.Command{
-	Name:       "open",
-	ParentName: "PROJECT",
-	ShortHelp:  "open the project page in browser",
-	Example:    "$ erda-cli project open --org=<name> --project=<name>",
+var INSPECT = command.Command{
+	Name:      "inspect",
+	ShortHelp: "inspect org/project/application",
+	Example:   "$ erda-cli inspect --application=<name>",
 	Flags: []command.Flag{
 		//command.Uint64Flag{Short: "", Name: "org-id", Doc: "the id of an organization", DefaultValue: 0},
 		//command.Uint64Flag{Short: "", Name: "project-id", Doc: "the id of a project", DefaultValue: 0},
-		//command.StringFlag{Short: "", Name: "org", Doc: "the name of an organization", DefaultValue: ""},
+		command.StringFlag{Short: "", Name: "org", Doc: "the name of an organization", DefaultValue: ""},
 		command.StringFlag{Short: "", Name: "project", Doc: "the name of a project", DefaultValue: ""},
+		command.StringFlag{Short: "", Name: "application", Doc: "the name of an application ", DefaultValue: ""},
+		//command.Uint64Flag{Short: "", Name: "application-id", Doc: "the id of an application ", DefaultValue: 0},
 	},
-	Run: ProjectOpen,
+	Run: Inspect,
 }
 
-func ProjectOpen(ctx *command.Context, project string /*orgId, projectId uint64, org, project string*/) error {
-	//checkOrgParam(org, orgId)
-	//checkProjectParam(project, projectId)
+func Inspect(ctx *command.Context, //orgId, projectId, applicationId uint64,
+	org, project, application string) error {
 
-	var org string
-	var orgId, projectId uint64
-
-	org, orgId, err := getOrgId(ctx, org, orgId)
+	var err error
+	if org != "" {
+		err = OrgInspect(ctx, org)
+	} else if project != "" {
+		err = ProjectInspect(ctx, project)
+	} else if application != "" {
+		err = ApplicationInspect(ctx, application, false)
+	} else if ctx.CurrentApplication.Name != "" {
+		err = ApplicationInspect(ctx, ctx.CurrentApplication.Name, false)
+	} else if ctx.CurrentProject.Name != "" {
+		err = ProjectInspect(ctx, project)
+	}
 	if err != nil {
 		return err
 	}
 
-	project, projectId, err = getProjectId(ctx, orgId, project, projectId)
-	if err != nil {
-		return err
-	}
-
-	err = common.Open(ctx, common.ProjectEntity, org, orgId, projectId, 0)
-	if err != nil {
-		return err
-	}
-
-	if project == "" {
-		project = ctx.CurrentProject.Name
-	}
-	ctx.Succ("Open project '%s' in browser.", project)
 	return nil
 }
