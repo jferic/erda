@@ -75,7 +75,7 @@ func Clone(ctx *command.Context, ustr string, cloneApps bool) error {
 		return errors.Errorf("Invalid erda url.")
 	}
 
-	orgId, err = getOrgId(ctx, org, orgId)
+	org, orgId, err = getOrgId(ctx, org, orgId)
 	if err != nil {
 		return err
 	}
@@ -103,7 +103,17 @@ func Clone(ctx *command.Context, ustr string, cloneApps bool) error {
 		ProjectId: projectId,
 	}
 
-	appList, err := common.GetApplications(ctx, orgId, projectId)
+	err = os.MkdirAll(fmt.Sprintf("%s/%s", p.Name, utils.GlobalErdaDir), 0755)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			os.RemoveAll(p.Name)
+		}
+	}()
+
+	appList, err := common.GetMyApplications(ctx, orgId, projectId)
 	if err != nil {
 		return err
 	}
@@ -121,16 +131,11 @@ func Clone(ctx *command.Context, ustr string, cloneApps bool) error {
 		}
 	}
 
-	for _, d := range []string{
-		p.Name,
-		fmt.Sprintf("%s/%s", p.Name, utils.GlobalErdaDir),
-	} {
-		err = os.MkdirAll(d, 0755)
-		if err != nil {
-			return err
-		}
+	if cloneApps {
+		successInfo = fmt.Sprintf("Project '%s' and your applications cloned.", p.Name)
+	} else {
+		successInfo = fmt.Sprintf("Project '%s' cloned.", p.Name)
 	}
-	successInfo = fmt.Sprintf("Project '%s' cloned.", p.Name)
 
 	if t == utils.ApplicatinURL { // init application
 		a, err := common.GetApplicationDetail(ctx, orgId, projectId, applicationId)

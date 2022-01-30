@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"os"
 	"path"
 
 	"github.com/erda-project/erda/pkg/terminal/table"
@@ -34,43 +35,15 @@ var PIPELINE = command.Command{
 }
 
 func PipelineGet(ctx *command.Context, noHeaders bool) error {
+
 	branch, err := utils.GetWorkspaceBranch()
 	if err != nil {
 		return err
 	}
 
-	var pipelineymls []string
-
-	// TODO default dir as ".erda" ?
-	//erdaDir, err := dicedir.FindProjectErdaDir()
-	//if err != nil && err != dicedir.NotExist {
-	//	return err
-	//} else if err == nil {
-	//	ymls, err := common.GetWorkspacePipelines(erdaDir)
-	//	if err != nil {
-	//		return err
-	//	}
-	//	for _, y := range ymls {
-	//		pipelineymls = append(pipelineymls, path.Join(dicedir.ProjectErdaDir, y))
-	//	}
-	//}
-
-	// compatible to dice
-	diceDir, err := utils.FindProjectDiceDir()
-	if err != nil && err != utils.NotExist {
+	pipelineymls, err := getWorkspacePipelines()
+	if err != nil {
 		return err
-	} else if err == nil {
-		ymls, err := utils.GetWorkspacePipelines(diceDir)
-		if err != nil {
-			return err
-		}
-		if len(ymls) > 0 {
-			// TODO
-			// fmt.Println(color_str.Yellow("Warning! Should rename .dice to .erda"))
-		}
-		for _, y := range ymls {
-			pipelineymls = append(pipelineymls, path.Join(utils.ProjectDiceDir, y))
-		}
 	}
 
 	var data [][]string
@@ -88,4 +61,28 @@ func PipelineGet(ctx *command.Context, noHeaders bool) error {
 		})
 	}
 	return t.Data(data).Flush()
+}
+
+func getWorkspacePipelines() ([]string, error) {
+	var pipelineymls []string
+	for _, d := range []string{utils.ProjectDiceDir, utils.ProjectErdaDir} {
+		dir := d + "/pipelines"
+		ymls, err := utils.GetWorkspacePipelines(dir)
+		if err != nil {
+			return pipelineymls, err
+		}
+		if len(ymls) > 0 {
+			// TODO
+			// fmt.Println(color_str.Yellow("Warning! Should rename .dice to .erda"))
+		}
+		for _, y := range ymls {
+			pipelineymls = append(pipelineymls, path.Join(dir, y))
+		}
+	}
+
+	if _, err := os.Stat("./pipeline.yml"); err == nil {
+		pipelineymls = append(pipelineymls, "pipeline.yml")
+	}
+
+	return pipelineymls, nil
 }

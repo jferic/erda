@@ -25,31 +25,35 @@ var APPLICATIONOPEN = command.Command{
 	ShortHelp:  "open the application page in browser",
 	Example:    "$ erda-cli application open --application=<name>",
 	Flags: []command.Flag{
-		command.Uint64Flag{Short: "", Name: "org-id", Doc: "the id of an organization", DefaultValue: 0},
-		command.Uint64Flag{Short: "", Name: "project-id", Doc: "the id of a project", DefaultValue: 0},
-		command.Uint64Flag{Short: "", Name: "application-id", Doc: "the id of an application ", DefaultValue: 0},
-		command.StringFlag{Short: "", Name: "org", Doc: "the name of an organization", DefaultValue: ""},
-		command.StringFlag{Short: "", Name: "project", Doc: "the name of a project", DefaultValue: ""},
+		//command.Uint64Flag{Short: "", Name: "org-id", Doc: "the id of an organization", DefaultValue: 0},
+		//command.Uint64Flag{Short: "", Name: "project-id", Doc: "the id of a project", DefaultValue: 0},
+		//command.StringFlag{Short: "", Name: "org", Doc: "the name of an organization", DefaultValue: ""},
+		//command.StringFlag{Short: "", Name: "project", Doc: "the name of a project", DefaultValue: ""},
 		command.StringFlag{Short: "", Name: "application", Doc: "the name of an application ", DefaultValue: ""},
+		//command.Uint64Flag{Short: "", Name: "application-id", Doc: "the id of an application ", DefaultValue: 0},
 	},
 	Run: ApplicationOpen,
 }
 
-func ApplicationOpen(ctx *command.Context, orgId, projectId, applicationId uint64, org, project, application string) error {
-	checkOrgParam(org, orgId)
-	checkProjectParam(project, projectId)
+func ApplicationOpen(ctx *command.Context, //orgId, projectId, applicationId uint64, org, project,
+	application string) error {
+	//checkOrgParam(org, orgId)
+	//checkProjectParam(project, projectId)
 
-	orgId, err := getOrgId(ctx, org, orgId)
+	var org, project string
+	var orgId, projectId, applicationId uint64
+
+	org, orgId, err := getOrgId(ctx, org, orgId)
 	if err != nil {
 		return err
 	}
 
-	projectId, err = getProjectId(ctx, orgId, project, projectId)
+	project, projectId, err = getProjectId(ctx, orgId, project, projectId)
 	if err != nil {
 		return err
 	}
 
-	applicationId, err = getApplicationId(ctx, orgId, projectId, application, applicationId)
+	application, applicationId, err = getApplicationId(ctx, orgId, projectId, application, applicationId)
 	if err != nil {
 		return err
 	}

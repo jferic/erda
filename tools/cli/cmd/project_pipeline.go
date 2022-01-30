@@ -16,24 +16,26 @@ package cmd
 
 import (
 	"github.com/erda-project/erda/tools/cli/command"
-	"github.com/erda-project/erda/tools/cli/common"
 )
 
-var APPLICATIONDELETE = command.Command{
-	Name:       "delete",
-	ParentName: "APPLICATION",
-	ShortHelp:  "delete application",
-	Example:    "$ erda-cli application delete --application-id=<id>",
+var PROJECTPIPELINE = command.Command{
+	Name:       "pipeline",
+	ParentName: "PROJECT",
+	ShortHelp:  "list pipelines in the project",
+	Example:    "$ erda-cli project pipeline",
 	Flags: []command.Flag{
-		//command.Uint64Flag{Short: "", Name: "application-id", Doc: "the id of an application ", DefaultValue: 0},
-		command.StringFlag{Short: "", Name: "application", Doc: "the name of an application ", DefaultValue: ""},
+		command.StringFlag{Short: "", Name: "name", Doc: "name of the pipeline", DefaultValue: ""},
+		command.StringFlag{Short: "", Name: "application", Doc: "the name of a application", DefaultValue: ""},
+		command.StringFlag{Short: "", Name: "ref", Doc: "the branch name", DefaultValue: ""},
+		command.StringFlag{Short: "", Name: "filename", Doc: "the filename of pipeline yaml", DefaultValue: ""},
 	},
-	Run: ApplicationDelete,
+	Run: ProjectPipeline,
 }
 
-func ApplicationDelete(ctx *command.Context, application string) error {
+func ProjectPipeline(ctx *command.Context, name, application, ref, filename string) error {
+
 	var org, project string
-	var orgId, projectId, applicationId uint64
+	var orgId, projectId uint64
 
 	org, orgId, err := getOrgId(ctx, org, orgId)
 	if err != nil {
@@ -45,18 +47,6 @@ func ApplicationDelete(ctx *command.Context, application string) error {
 		return err
 	}
 
-	application, applicationId, err = getApplicationId(ctx, orgId, projectId, application, applicationId)
-	if err != nil {
-		return err
-	}
-
-	err = common.DeleteApplication(ctx, applicationId)
-	if err != nil {
-		return err
-	}
-
-	// TODO rm app in pwd ?
-
-	ctx.Succ("Application '%s' deleted.", application)
+	ctx.Succ("TODO", project)
 	return nil
 }

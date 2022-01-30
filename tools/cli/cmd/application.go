@@ -19,13 +19,14 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/pkg/errors"
+
 	"github.com/erda-project/erda/apistructs"
 	"github.com/erda-project/erda/modules/core-services/types"
 	"github.com/erda-project/erda/pkg/terminal/table"
 	"github.com/erda-project/erda/tools/cli/command"
 	"github.com/erda-project/erda/tools/cli/common"
 	"github.com/erda-project/erda/tools/cli/utils"
-	"github.com/pkg/errors"
 )
 
 var APPLICATION = command.Command{
@@ -34,26 +35,30 @@ var APPLICATION = command.Command{
 	Example:   "$ erda-cli application --project=<name>",
 	Flags: []command.Flag{
 		command.BoolFlag{Short: "", Name: "no-headers", Doc: "if true, don't print headers (default print headers)", DefaultValue: false},
-		command.Uint64Flag{Short: "", Name: "org-id", Doc: "the id of an organization", DefaultValue: 0},
-		command.Uint64Flag{Short: "", Name: "project-id", Doc: "the id of a project", DefaultValue: 0},
-		command.StringFlag{Short: "", Name: "org", Doc: "the name of an organization", DefaultValue: ""},
-		command.StringFlag{Short: "", Name: "project", Doc: "the name of a project", DefaultValue: ""},
+		//command.Uint64Flag{Short: "", Name: "org-id", Doc: "the id of an organization", DefaultValue: 0},
+		//command.Uint64Flag{Short: "", Name: "project-id", Doc: "the id of a project", DefaultValue: 0},
+		//command.StringFlag{Short: "", Name: "org", Doc: "the name of an organization", DefaultValue: ""},
+		//command.StringFlag{Short: "", Name: "project", Doc: "the name of a project", DefaultValue: ""},
 		command.IntFlag{Short: "", Name: "page-size", Doc: "the number of page size", DefaultValue: 10},
 		command.BoolFlag{Short: "", Name: "with-owner", Doc: "if true, return owners of applications", DefaultValue: false},
 	},
 	Run: GetApplications,
 }
 
-func GetApplications(ctx *command.Context, noHeaders bool, orgId, projectId uint64, org, project string, pageSize int, withOwner bool) error {
-	checkOrgParam(org, orgId)
-	checkProjectParam(project, projectId)
+func GetApplications(ctx *command.Context, noHeaders bool, //orgId, projectId uint64, org, project string,
+	pageSize int, withOwner bool) error {
+	//checkOrgParam(org, orgId)
+	//checkProjectParam(project, projectId)
 
-	orgId, err := getOrgId(ctx, org, orgId)
+	var org, project string
+	var orgId, projectId uint64
+
+	org, orgId, err := getOrgId(ctx, org, orgId)
 	if err != nil {
 		return err
 	}
 
-	projectId, err = getProjectId(ctx, orgId, project, projectId)
+	project, projectId, err = getProjectId(ctx, orgId, project, projectId)
 	if err != nil {
 		return err
 	}
@@ -123,23 +128,31 @@ func checkApplicationParam(application string, applicationId uint64) {
 	}
 }
 
-func getApplicationId(ctx *command.Context, orgId, projectId uint64, application string, applicationId uint64) (uint64, error) {
+func getApplicationId(ctx *command.Context, orgId, projectId uint64, application string, applicationId uint64) (string, uint64, error) {
 	if application != "" {
 		// TODO get no projectid
 		appId, err := common.GetApplicationIdByName(ctx, orgId, projectId, application)
 		if err != nil {
-			return applicationId, err
+			return application, applicationId, err
 		}
 		applicationId = appId
 	}
 
+	if application == "" && ctx.CurrentApplication.Name == "" {
+		return application, applicationId, errors.New("Invalid application name")
+	}
+
+	if application == "" && ctx.CurrentApplication.Name != "" {
+		application = ctx.CurrentApplication.Name
+	}
+
 	if applicationId <= 0 && ctx.CurrentApplication.ID <= 0 {
-		return applicationId, errors.New("Invalid application id")
+		return application, applicationId, errors.New("Invalid application id")
 	}
 
 	if applicationId == 0 && ctx.CurrentApplication.ID > 0 {
 		applicationId = ctx.CurrentApplication.ID
 	}
 
-	return applicationId, nil
+	return application, applicationId, nil
 }

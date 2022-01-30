@@ -25,16 +25,17 @@ var ORGOPEN = command.Command{
 	ShortHelp:  "open the organization page in browser",
 	Example:    "$ erda-cli org open --org=<name>",
 	Flags: []command.Flag{
-		command.Uint64Flag{Short: "", Name: "org-id", Doc: "the id of an organization", DefaultValue: 0},
 		command.StringFlag{Short: "", Name: "org", Doc: "the name of an organization", DefaultValue: ""},
+		//command.Uint64Flag{Short: "", Name: "org-id", Doc: "the id of an organization", DefaultValue: 0},
 	},
 	Run: OrgOpen,
 }
 
-func OrgOpen(ctx *command.Context, orgId uint64, org string) error {
-	checkOrgParam(org, orgId)
+func OrgOpen(ctx *command.Context, org string /*, org string, orgId uint64*/) error {
+	//checkOrgParam(org, orgId)
 
-	orgId, err := getOrgId(ctx, org, orgId)
+	var orgId uint64
+	org, orgId, err := getOrgId(ctx, org, orgId)
 	if err != nil {
 		return err
 	}

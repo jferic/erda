@@ -48,7 +48,12 @@ func GetOrgs(ctx *command.Context, noHeaders bool, pageSize int) error {
 
 			data := [][]string{}
 			for _, o := range pagingOrgs.List {
+				current := " "
+				if o.Name == ctx.CurrentOrg.Name {
+					current = "*"
+				}
 				data = append(data, []string{
+					current,
 					strconv.FormatUint(o.ID, 10),
 					o.Name,
 					o.Desc,
@@ -58,7 +63,7 @@ func GetOrgs(ctx *command.Context, noHeaders bool, pageSize int) error {
 			t := table.NewTable()
 			if !noHeaders {
 				t.Header([]string{
-					"OrgID", "Name", "Description",
+					"Current", "OrgID", "Name", "Description",
 				})
 			}
 			err = t.Data(data).Flush()
@@ -77,24 +82,32 @@ func GetOrgs(ctx *command.Context, noHeaders bool, pageSize int) error {
 	return nil
 }
 
-func getOrgId(ctx *command.Context, org string, orgId uint64) (uint64, error) {
+func getOrgId(ctx *command.Context, org string, orgId uint64) (string, uint64, error) {
 	if org != "" {
 		o, err := common.GetOrgDetail(ctx, org)
 		if err != nil {
-			return orgId, err
+			return org, orgId, err
 		}
 		orgId = o.ID
 	}
 
+	if org == "" && ctx.CurrentOrg.Name == "" {
+		return org, orgId, errors.New("Invalid organization name")
+	}
+
+	if org == "" && ctx.CurrentOrg.Name != "" {
+		org = ctx.CurrentOrg.Name
+	}
+
 	if orgId <= 0 && ctx.CurrentOrg.ID <= 0 {
-		return orgId, errors.New("Invalid organization id")
+		return org, orgId, errors.New("Invalid organization id")
 	}
 
 	if orgId == 0 && ctx.CurrentOrg.ID > 0 {
 		orgId = ctx.CurrentOrg.ID
 	}
 
-	return orgId, nil
+	return org, orgId, nil
 }
 
 func checkOrgParam(org string, orgId uint64) {

@@ -38,7 +38,7 @@ var RELEASEINSPECT = command.Command{
 func ReleaseInspect(ctx *command.Context, orgId uint64, org, release string) error {
 	checkOrgParam(org, orgId)
 
-	orgId, err := getOrgId(ctx, org, orgId)
+	org, orgId, err := getOrgId(ctx, org, orgId)
 	if err != nil {
 		return err
 	}

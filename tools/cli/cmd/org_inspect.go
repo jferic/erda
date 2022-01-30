@@ -16,7 +16,6 @@ package cmd
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/erda-project/erda/tools/cli/command"
 	"github.com/erda-project/erda/tools/cli/common"
@@ -29,27 +28,22 @@ var ORGINSPECT = command.Command{
 	ShortHelp:  "display detail information of one organization",
 	Example:    "$ erda-cli org inspect --org=<name>",
 	Flags: []command.Flag{
-		command.Uint64Flag{Short: "", Name: "org-id", Doc: "the id of an organization", DefaultValue: 0},
+		//command.Uint64Flag{Short: "", Name: "org-id", Doc: "the id of an organization", DefaultValue: 0},
 		command.StringFlag{Short: "", Name: "org", Doc: "the name of an organization", DefaultValue: ""},
 	},
 	Run: OrgInspect,
 }
 
-func OrgInspect(ctx *command.Context, orgId uint64, org string) error {
-	checkOrgParam(org, orgId)
+func OrgInspect(ctx *command.Context, org string) error {
+	//checkOrgParam(org, orgId)
 
-	orgIdorName := ""
-	if org != "" {
-		orgIdorName = org
-	} else if orgId > 0 {
-		orgIdorName = strconv.FormatUint(orgId, 10)
-	} else if orgId <= 0 && ctx.CurrentOrg.ID > 0 {
-		orgIdorName = strconv.FormatUint(ctx.CurrentOrg.ID, 10)
-	} else {
-		return fmt.Errorf(utils.FormatErrMsg("org inspect", "invalid Org or OrgID", true))
+	var orgId uint64
+	org, orgId, err := getOrgId(ctx, org, orgId)
+	if err != nil {
+		return err
 	}
 
-	o, err := common.GetOrgDetail(ctx, orgIdorName)
+	o, err := common.GetOrgDetail(ctx, org)
 	if err != nil {
 		return err
 	}

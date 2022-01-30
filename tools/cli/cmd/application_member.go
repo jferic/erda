@@ -32,34 +32,36 @@ var APPLICATIONMEMBER = command.Command{
 	Example:    "$ erda-cli application member --application=<name>",
 	Flags: []command.Flag{
 		command.BoolFlag{Short: "", Name: "no-headers", Doc: "if true, don't print headers (default print headers)", DefaultValue: false},
-		command.Uint64Flag{Short: "", Name: "org-id", Doc: "the id of an organization", DefaultValue: 0},
-		command.Uint64Flag{Short: "", Name: "project-id", Doc: "the id of a project", DefaultValue: 0},
-		command.Uint64Flag{Short: "", Name: "application-id", Doc: "the id of an application ", DefaultValue: 0},
-		command.StringFlag{Short: "", Name: "org", Doc: "the name of an organization", DefaultValue: ""},
-		command.StringFlag{Short: "", Name: "project", Doc: "the name of a project", DefaultValue: ""},
+		//command.Uint64Flag{Short: "", Name: "org-id", Doc: "the id of an organization", DefaultValue: 0},
+		//command.Uint64Flag{Short: "", Name: "project-id", Doc: "the id of a project", DefaultValue: 0},
+		//command.StringFlag{Short: "", Name: "org", Doc: "the name of an organization", DefaultValue: ""},
+		//command.StringFlag{Short: "", Name: "project", Doc: "the name of a project", DefaultValue: ""},
 		command.StringFlag{Short: "", Name: "application", Doc: "the name of an application ", DefaultValue: ""},
+		//command.Uint64Flag{Short: "", Name: "application-id", Doc: "the id of an application ", DefaultValue: 0},
 		command.IntFlag{Short: "", Name: "page-size", Doc: "the number of page size", DefaultValue: 10},
 		command.StringListFlag{Short: "", Name: "roles", Doc: "roles to list", DefaultValue: nil},
 	},
 	Run: ApplicationMember,
 }
 
-func ApplicationMember(ctx *command.Context, noHeaders bool, orgId, projectId, applicationId uint64,
-	org, project, application string, pageSize int, roles []string) error {
-	checkOrgParam(org, orgId)
-	checkProjectParam(project, projectId)
+func ApplicationMember(ctx *command.Context, noHeaders bool, //orgId, projectId, applicationId uint64, org, project,
+	application string, pageSize int, roles []string) error {
+	//checkOrgParam(org, orgId)
+	//checkProjectParam(project, projectId)
+	var org, project string
+	var orgId, projectId, applicationId uint64
 
-	orgId, err := getOrgId(ctx, org, orgId)
+	org, orgId, err := getOrgId(ctx, org, orgId)
 	if err != nil {
 		return err
 	}
 
-	projectId, err = getProjectId(ctx, orgId, project, projectId)
+	project, projectId, err = getProjectId(ctx, orgId, project, projectId)
 	if err != nil {
 		return err
 	}
 
-	applicationId, err = getApplicationId(ctx, orgId, projectId, application, applicationId)
+	application, applicationId, err = getApplicationId(ctx, orgId, projectId, application, applicationId)
 	if err != nil {
 		return err
 	}

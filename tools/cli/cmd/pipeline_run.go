@@ -16,7 +16,10 @@ package cmd
 
 import (
 	"os"
-	"path"
+	"os/exec"
+	"strings"
+
+	"github.com/spf13/cobra"
 
 	"github.com/pkg/errors"
 
@@ -31,21 +34,58 @@ var PIPELINERUN = command.Command{
 	Name:       "run",
 	ParentName: "PIPELINE",
 	ShortHelp:  "create a pipeline and run it",
-	Example:    "$ erda-cli pipeline run -f <path-to/pipeline.yml>",
+	Example:    "$ erda-cli pipeline run <path-to/pipeline.yml>",
+	Args: []command.Arg{
+		command.StringArg{}.Name("filename"),
+	},
 	Flags: []command.Flag{
 		command.StringFlag{Short: "", Name: "branch", Doc: "branch to create pipeline, default is current branch", DefaultValue: ""},
-		command.StringFlag{Short: "f", Name: "filename", Doc: "filename for 'pipeline.yml'", DefaultValue: path.Join(utils.ProjectPipelineDir, "pipeline.yml")},
+		//command.StringFlag{Short: "f", Name: "filename", Doc: "filename for 'pipeline.yml'", DefaultValue: path.Join(utils.ProjectPipelineDir, "pipeline.yml")},
+		command.BoolFlag{Short: "w", Name: "watch", Doc: "watch the status", DefaultValue: false},
 	},
-	Run: PipelineRun,
+	ValidArgsFunction:          FilenameCompletion,
+	RegisterFlagCompletionFunc: map[string]interface{}{"branch": BranchCompletion},
+	Run:                        PipelineRun,
+}
+
+func FilenameCompletion(ctx *cobra.Command, args []string, toComplete string, filename, branch string, watch bool) []string {
+	comps := []string{}
+	if branch != "" {
+		b, err := utils.GetWorkspaceBranch()
+		if err != nil || branch != b {
+			return comps
+		}
+	}
+
+	p, err := getWorkspacePipelines()
+	if err == nil {
+		comps = p
+	}
+	return comps
+}
+
+func BranchCompletion(ctx *cobra.Command, args []string, toComplete string, filename, branch string, watch bool) []string {
+	comps := []string{}
+
+	c1 := exec.Command("git", "branch")
+	c2 := exec.Command("cut", "-c", "3-")
+	output, err := utils.PipeCmds(c1, c2)
+	if err == nil {
+		splites := strings.Split(output, "\n")
+		for _, s := range splites {
+			comps = append(comps, s)
+		}
+	}
+	return comps
 }
 
 // Create an pipeline and run it
-func PipelineRun(ctx *command.Context, branch, filename string) error {
+func PipelineRun(ctx *command.Context, filename, branch string, watch bool) error {
 	// 1. check if .git dir exists in current directory
 	// 2. parse current branch
 	// 3. create pipeline, run it
 	if _, err := os.Stat(".git"); err != nil {
-		return err
+		return errors.New("Current directory is not a local git repository")
 	}
 
 	dirty, err := utils.IsWorkspaceDirty()
@@ -102,8 +142,16 @@ func PipelineRun(ctx *command.Context, branch, filename string) error {
 	if !pipelineResp.Success {
 		return errors.Errorf("build fail: %+v", pipelineResp.Error)
 	}
-	ctx.Succ("run pipeline: %s for branch: %s, pipelineID: %d, you can view building status via `erda-cli pipeline view -i %d`",
-		filename, branch, pipelineResp.Data.ID, pipelineResp.Data.ID)
+
+	if watch {
+		err = PipelineView(ctx, branch, pipelineResp.Data.ID, true)
+		if err != nil {
+			ctx.Fail("failed to watch status of pipeline %d", pipelineResp.Data.ID)
+		}
+	} else {
+		ctx.Succ("run pipeline: %s for branch: %s, pipelineID: %d, you can view building status via `erda-cli pipeline view -i %d`",
+			filename, branch, pipelineResp.Data.ID, pipelineResp.Data.ID)
+	}
 
 	return nil
 }

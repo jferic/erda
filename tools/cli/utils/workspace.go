@@ -68,14 +68,13 @@ func IsWorkspaceDirty() (bool, error) {
 
 func GetWorkspacePipelines(dir string) ([]string, error) {
 	var ymls []string
-	fs, err := ioutil.ReadDir(dir + "/pipelines")
+	fs, err := ioutil.ReadDir(dir)
 	if err != nil && !os.IsNotExist(err) {
 		return nil, err
 	}
 
 	for _, path := range fs {
-		if !path.IsDir() && (strings.HasSuffix(path.Name(), ".yml") ||
-			strings.HasSuffix(path.Name(), ".yaml")) {
+		if !path.IsDir() && strings.HasSuffix(path.Name(), ".yml") {
 			ymls = append(ymls, path.Name())
 		}
 	}

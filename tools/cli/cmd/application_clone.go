@@ -18,44 +18,79 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/erda-project/erda/tools/cli/utils"
+	"github.com/spf13/cobra"
+
 	"github.com/pkg/errors"
 
 	"github.com/erda-project/erda/tools/cli/command"
 	"github.com/erda-project/erda/tools/cli/common"
+	"github.com/erda-project/erda/tools/cli/utils"
 )
 
 var APPLICATIONCLONE = command.Command{
 	Name:       "clone",
 	ParentName: "APPLICATION",
 	ShortHelp:  "clone the application",
-	Example:    "$ erda-cli application clone --application=<name>",
-	Flags: []command.Flag{
-		command.Uint64Flag{Short: "", Name: "org-id", Doc: "the id of an organization", DefaultValue: 0},
-		command.Uint64Flag{Short: "", Name: "project-id", Doc: "the id of a project", DefaultValue: 0},
-		command.Uint64Flag{Short: "", Name: "application-id", Doc: "the id of an application ", DefaultValue: 0},
-		command.StringFlag{Short: "", Name: "org", Doc: "the name of an organization", DefaultValue: ""},
-		command.StringFlag{Short: "", Name: "project", Doc: "the name of a project", DefaultValue: ""},
-		command.StringFlag{Short: "", Name: "application", Doc: "the name of an application ", DefaultValue: ""},
+	Example:    "$ erda-cli application clone <name>",
+	Args: []command.Arg{
+		command.StringArg{}.Name("application"),
 	},
-	Run: ApplicationClone,
+	ValidArgsFunction: ArgApplicationCompletion,
+	Run:               ApplicationClone,
 }
 
-func ApplicationClone(ctx *command.Context, orgId, projectId, applicationId uint64, org, project, application string) error {
-	checkOrgParam(org, orgId)
-	checkProjectParam(project, projectId)
+func ArgApplicationCompletion(ctx *cobra.Command, args []string, toComplete string, application string) []string {
+	var comps []string
 
-	orgId, err := getOrgId(ctx, org, orgId)
+	err := command.PrepareCtx(ctx, args)
+	if err != nil {
+		return comps
+	}
+
+	var org, project string
+	var orgId, projectId uint64
+
+	c := command.GetContext()
+	org, orgId, err = getOrgId(c, org, orgId)
+	if err != nil {
+		return comps
+	}
+
+	project, projectId, err = getProjectId(c, orgId, project, projectId)
+	if err != nil {
+		return comps
+	}
+
+	appList, err := common.GetApplications(c, orgId, projectId)
+	if err != nil {
+		return comps
+	}
+
+	for _, a := range appList {
+		comps = append(comps, a.Name)
+	}
+
+	return comps
+}
+
+func ApplicationClone(ctx *command.Context, application string) error {
+	//checkOrgParam(org, orgId)
+	//checkProjectParam(project, projectId)
+
+	var org, project string
+	var orgId, projectId, applicationId uint64
+
+	org, orgId, err := getOrgId(ctx, org, orgId)
 	if err != nil {
 		return err
 	}
 
-	projectId, err = getProjectId(ctx, orgId, project, projectId)
+	project, projectId, err = getProjectId(ctx, orgId, project, projectId)
 	if err != nil {
 		return err
 	}
 
-	applicationId, err = getApplicationId(ctx, orgId, projectId, application, applicationId)
+	application, applicationId, err = getApplicationId(ctx, orgId, projectId, application, applicationId)
 	if err != nil {
 		return err
 	}
@@ -80,12 +115,12 @@ func ApplicationClone(ctx *command.Context, orgId, projectId, applicationId uint
 		return err
 	}
 
-	dir := a.Name
+	dir := application
 	err = cloneApplication(pInfo, a, repo, dir)
 	if err != nil {
 		return err
 	}
 
-	ctx.Succ("Application '%s' cloned.", a.Name)
+	ctx.Succ("Application '%s' cloned.", application)
 	return nil
 }

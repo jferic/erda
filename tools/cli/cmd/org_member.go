@@ -43,7 +43,7 @@ var ORGMEMBER = command.Command{
 func OrgMember(ctx *command.Context, noHeaders bool, orgId uint64, org string, pageSize int, roles []string) error {
 	checkOrgParam(org, orgId)
 
-	orgId, err := getOrgId(ctx, org, orgId)
+	org, orgId, err := getOrgId(ctx, org, orgId)
 	if err != nil {
 		return err
 	}
