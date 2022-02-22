@@ -137,6 +137,15 @@ func getProjectId(ctx *command.Context, orgId uint64, project string, projectId 
 		project = ctx.CurrentProject.Name
 	}
 
+	if projectId <= 0 && ctx.CurrentProject.ID <= 0 && project != "" {
+		pId, err := common.GetProjectIdByName(ctx, orgId, project)
+		if err != nil {
+			return project, projectId, err
+		}
+		ctx.CurrentProject.ID = pId
+		projectId = pId
+	}
+
 	if projectId <= 0 && ctx.CurrentProject.ID <= 0 {
 		return project, projectId, errors.New("Invalid project id")
 	}

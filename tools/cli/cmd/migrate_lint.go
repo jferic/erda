@@ -56,24 +56,6 @@ var MigrationLint = command.Command{
 			Doc:          "[Optional] the lint config file",
 			DefaultValue: "",
 		},
-		command.BoolFlag{
-			Short:        "",
-			Name:         "no-detail",
-			Doc:          "[Optional] do not print details of lint result",
-			DefaultValue: false,
-		},
-		command.StringFlag{
-			Short:        "o",
-			Name:         "output",
-			Doc:          "[Optional] result output file name",
-			DefaultValue: "",
-		},
-		command.BoolFlag{
-			Short:        "",
-			Name:         "custom",
-			Doc:          "custom directory",
-			DefaultValue: false,
-		},
 	},
 	Run: RunMigrateLint,
 }

@@ -21,8 +21,8 @@ import (
 	"github.com/erda-project/erda/tools/cli/common"
 )
 
-var PROJECTPIPELINECreate = command.Command{
-	Name:       "pipeline",
+var PROJECTPIPELINECREATE = command.Command{
+	Name:       "create",
 	ParentName: "PROJECTPIPELINE",
 	ShortHelp:  "create a pipeline in the project",
 	Example:    "$ erda-cli project pipeline create",

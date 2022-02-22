@@ -96,7 +96,7 @@ func Clone(ctx *command.Context, ustr string, cloneApps bool) error {
 	}
 	pInfo = &command.ProjectInfo{
 		Version:   command.ConfigVersion,
-		Server:    "https://openapi.erda.cloud", // TODO
+		Server:    ctx.CurrentOpenApiHost,
 		Org:       org,
 		OrgId:     orgId,
 		Project:   p.Name,
@@ -118,16 +118,18 @@ func Clone(ctx *command.Context, ustr string, cloneApps bool) error {
 		return err
 	}
 	for _, a := range appList {
-		aInfo := command.ApplicationInfo{a.Name, a.ID}
+		aInfo := command.ApplicationInfo{a.Name, a.ID, a.Mode, a.Desc}
 		pInfo.Applications = append(pInfo.Applications, aInfo)
 
 		if t == utils.ProjectURL && cloneApps {
 			repo := fmt.Sprintf("%s://%s", u.Scheme, a.GitRepoNew)
 			dir := fmt.Sprintf("%s/%s", p.Name, a.Name)
+			ctx.Info("Application '%s' cloning ...", a.Name)
 			err = cloneApplication(pInfo, a, repo, dir)
 			if err != nil {
 				return err
 			}
+			ctx.Info("Application '%s' cloned.", a.Name)
 		}
 	}
 
@@ -152,7 +154,7 @@ func Clone(ctx *command.Context, ustr string, cloneApps bool) error {
 		}
 
 		pInfo.Applications = append(pInfo.Applications, command.ApplicationInfo{
-			a.Name, a.ID,
+			a.Name, a.ID, a.Mode, a.Desc,
 		})
 
 		successInfo = fmt.Sprintf("Application '%s/%s' cloned.", a.ProjectName, a.Name)

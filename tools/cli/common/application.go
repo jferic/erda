@@ -18,7 +18,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"os/exec"
 	"strconv"
+	"time"
 
 	"github.com/pkg/errors"
 
@@ -207,5 +209,82 @@ func DeleteApplication(ctx *command.Context, applicationId uint64) error {
 			fmt.Sprintf("failed to request, error code: %s, error message: %s",
 				resp.Error.Code, resp.Error.Msg), false))
 	}
+	return nil
+}
+
+func CreateApplication(ctx *command.Context, projectId uint64, application, mode, desc string) (apistructs.ApplicationDTO, error) {
+	var request apistructs.ApplicationCreateRequest
+	var response apistructs.ApplicationCreateResponse
+	var b bytes.Buffer
+
+	request.Name = application
+	request.Mode = apistructs.ApplicationMode(mode)
+	request.Desc = desc
+	request.ProjectID = projectId
+
+	resp, err := ctx.Post().Path("/api/applications").JSONBody(request).Do().Body(&b)
+	if err != nil {
+		return apistructs.ApplicationDTO{}, fmt.Errorf(
+			utils.FormatErrMsg("create", "failed to request ("+err.Error()+")", false))
+	}
+
+	if !resp.IsOK() {
+		return apistructs.ApplicationDTO{}, fmt.Errorf(utils.FormatErrMsg("create",
+			fmt.Sprintf("failed to request, status-code: %d, content-type: %s, raw bod: %s",
+				resp.StatusCode(), resp.ResponseHeader("Content-Type"), b.String()), false))
+	}
+
+	if err := json.Unmarshal(b.Bytes(), &response); err != nil {
+		return apistructs.ApplicationDTO{}, fmt.Errorf(utils.FormatErrMsg("create",
+			fmt.Sprintf("failed to unmarshal application create response ("+err.Error()+")"), false))
+	}
+
+	if !response.Success {
+		return apistructs.ApplicationDTO{}, fmt.Errorf(utils.FormatErrMsg("create",
+			fmt.Sprintf("failed to request, error code: %s, error message: %s",
+				response.Error.Code, response.Error.Msg), false))
+	}
+
+	return response.Data, nil
+}
+
+func PushApplication(dir, repo string, force bool) error {
+	// config remote
+	remoteName := fmt.Sprintf("remote-%d", time.Now().UnixNano())
+	addRemote := exec.Command("git", "remote", "add", remoteName, repo)
+	addRemote.Dir = dir
+	output, err := addRemote.CombinedOutput()
+	if err != nil {
+		return errors.Errorf("failed to add remote repo, error: %v, %s", err, output)
+	}
+	defer func() {
+		removeRemote := exec.Command("git", "remote", "remove", remoteName)
+		removeRemote.Dir = dir
+		output, err = removeRemote.CombinedOutput()
+	}()
+
+	// push code
+	args := []string{"push", "-u", remoteName, "--all"}
+	if force {
+		args = append(args, "--force")
+	}
+	pushAll := exec.Command("git", args...)
+	pushAll.Dir = dir
+	output, err = pushAll.CombinedOutput()
+	if err != nil {
+		return errors.Errorf("git push repo %s err, %s", repo, output)
+	}
+
+	args = []string{"push", "-u", remoteName, "--tags"}
+	if force {
+		args = append(args, "--force")
+	}
+	pushTags := exec.Command("git", args...)
+	pushTags.Dir = dir
+	output, err = pushTags.CombinedOutput()
+	if err != nil {
+		return errors.Errorf("git push repo %s err, %s", repo, output)
+	}
+
 	return nil
 }

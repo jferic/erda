@@ -64,6 +64,8 @@ type ProjectInfo2 struct {
 type ApplicationInfo2 struct {
 	ID   uint64
 	Name string
+	Mode string
+	Desc string
 }
 
 func (c *Context) Get() *httpclient.Request {
@@ -197,6 +199,11 @@ func (c *Context) ProdErdaYml(checkExist bool) (string, error) {
 		return defaultYmlCheckExist("prod")
 	}
 	return defaultYml("prod")
+}
+
+func (c *Context) Info(format string, a ...interface{}) {
+	f := "  " + strings.TrimSuffix(format, "\n") + "\n"
+	fmt.Printf(f, a...)
 }
 
 func (c *Context) Succ(format string, a ...interface{}) {

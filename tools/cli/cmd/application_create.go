@@ -15,9 +15,9 @@
 package cmd
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
+
+	"github.com/erda-project/erda/tools/cli/common"
 
 	"github.com/pkg/errors"
 
@@ -67,41 +67,14 @@ func ApplicationCreate(ctx *command.Context, //projectId uint64, project,
 		return err
 	}
 
-	var request apistructs.ApplicationCreateRequest
-	var response apistructs.ApplicationCreateResponse
-	var b bytes.Buffer
-
-	request.Name = name
-	request.Mode = apistructs.ApplicationMode(mode)
-	request.Desc = desc
-	request.ProjectID = projectId
-
-	resp, err := ctx.Post().Path("/api/applications").JSONBody(request).Do().Body(&b)
+	app, err := common.CreateApplication(ctx, projectId, name, desc, mode)
 	if err != nil {
-		return fmt.Errorf(
-			utils.FormatErrMsg("create", "failed to request ("+err.Error()+")", false))
-	}
-
-	if !resp.IsOK() {
-		return fmt.Errorf(utils.FormatErrMsg("create",
-			fmt.Sprintf("failed to request, status-code: %d, content-type: %s, raw bod: %s",
-				resp.StatusCode(), resp.ResponseHeader("Content-Type"), b.String()), false))
-	}
-
-	if err := json.Unmarshal(b.Bytes(), &response); err != nil {
-		return fmt.Errorf(utils.FormatErrMsg("create",
-			fmt.Sprintf("failed to unmarshal application create response ("+err.Error()+")"), false))
-	}
-
-	if !response.Success {
-		return fmt.Errorf(utils.FormatErrMsg("create",
-			fmt.Sprintf("failed to request, error code: %s, error message: %s",
-				response.Error.Code, response.Error.Msg), false))
+		return err
 	}
 
 	// TODO clone project into pwd
 	pInfo.Applications = append(pInfo.Applications, command.ApplicationInfo{
-		response.Data.Name, response.Data.ID,
+		app.Name, app.ID, app.Mode, app.Desc,
 	})
 
 	err = command.SetProjectConfig(config, pInfo)
@@ -111,7 +84,7 @@ func ApplicationCreate(ctx *command.Context, //projectId uint64, project,
 
 	ctx.Succ("Application created.")
 
-	s, err := utils.Marshal(response.Data)
+	s, err := utils.Marshal(app)
 	if err != nil {
 		return fmt.Errorf(utils.FormatErrMsg("create",
 			"failed to prettyjson marshal application data ("+err.Error()+")", false))
