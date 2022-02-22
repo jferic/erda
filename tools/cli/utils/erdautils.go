@@ -53,14 +53,19 @@ func ClassifyURL(path string) (URLType, []string, error) {
 	paths := strings.Split(path, "/")
 
 	l := len(paths)
+
+	if l < 3 {
+		return "", nil, errors.Errorf("invalid erda url path %s", path)
+	}
+
 	if paths[2] == "dop" {
 		if paths[3] == "projects" {
-			if l == 5 {
-				// /<org>/dop/projects/<projectId>
-				return ProjectURL, paths, nil
-			} else if l >= 7 && paths[5] == "apps" {
+			if l >= 7 && paths[5] == "apps" {
 				// /<org>/dop/projects/<projectId>/apps/<applicationId>
 				return ApplicatinURL, paths, nil
+			} else if l == 5 || (l == 6 && paths[5] == "apps") {
+				// /<org>/dop/projects/<projectId>
+				return ProjectURL, paths, nil
 			}
 		} else if l == 5 {
 			// /<org>/dop/<project>/<app>

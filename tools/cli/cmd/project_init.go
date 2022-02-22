@@ -16,7 +16,7 @@ package cmd
 
 import (
 	"fmt"
-	"os"
+	"strings"
 
 	"github.com/pkg/errors"
 
@@ -29,15 +29,16 @@ var PROJECTINIT = command.Command{
 	Name:       "init",
 	ParentName: "PROJECT",
 	ShortHelp:  "init project",
-	Example:    "$ erda-cli project inspect --project=<name>",
+	Example:    "$ erda-cli project init",
 	Flags: []command.Flag{
 		command.StringFlag{Short: "", Name: "org", Doc: "the name of an organization", DefaultValue: ""},
 		command.StringFlag{Short: "", Name: "project", Doc: "the name of a project", DefaultValue: ""},
+		command.BoolFlag{Short: "", Name: "cloneApps", Doc: "if false, don't clone applications in the project", DefaultValue: true},
 	},
 	Run: ProjectInit,
 }
 
-func ProjectInit(ctx *command.Context, org, project string) error {
+func ProjectInit(ctx *command.Context, org, project string, cloneApps bool) error {
 	_, _, err := command.GetProjectConfig()
 	if err == nil {
 		return errors.New("project already inited.")
@@ -64,21 +65,25 @@ func ProjectInit(ctx *command.Context, org, project string) error {
 		ProjectId: pId,
 	}
 
-	appList, err := common.GetApplications(ctx, o.ID, pId)
+	appList, err := common.GetMyApplications(ctx, o.ID, pId)
 	if err != nil {
 		return err
 	}
 	for _, a := range appList {
-		aInfo := command.ApplicationInfo{a.Name, a.ID}
+		aInfo := command.ApplicationInfo{a.Name, a.ID, a.Mode, a.Desc}
 		pInfo.Applications = append(pInfo.Applications, aInfo)
-	}
 
-	for _, d := range []string{
-		fmt.Sprintf("%s", utils.GlobalErdaDir),
-	} {
-		err = os.MkdirAll(d, 0755)
-		if err != nil {
-			return err
+		if cloneApps {
+			ss := strings.Split(ctx.CurrentOpenApiHost, "://")
+			if len(ss) < 1 {
+				return errors.Errorf("Invalid openapi host %s", ctx.CurrentOpenApiHost)
+			}
+			repo := fmt.Sprintf("%s://%s", ss[0], a.GitRepoNew)
+			dir := fmt.Sprintf("%s/%s", project, a.Name)
+			err = cloneApplication(&pInfo, a, repo, dir)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -86,7 +91,7 @@ func ProjectInit(ctx *command.Context, org, project string) error {
 	if err != nil {
 		return err
 	}
-	ctx.Succ("Project '%s' cloned.", project)
+	ctx.Succ("Project '%s' inited.", project)
 
 	return nil
 }

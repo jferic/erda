@@ -188,6 +188,7 @@ func clearProject(ctx *command.Context, orgId, projectId uint64, workspace strin
 			if err != nil {
 				return err
 			}
+			ctx.Info("Application '%s' deleted.", app.Name)
 		}
 	}
 

@@ -22,8 +22,24 @@ type ProjectInfo struct {
 }
 
 type ApplicationInfo struct {
-	Application   string `yaml:"application"`
-	ApplicationId uint64 `yaml:"application_id"`
+	Application   string `yaml:"name"`
+	ApplicationId uint64 `yaml:"id"`
+	Mode          string `yaml:"mode"`
+	Desc          string `yaml:"desc"`
+}
+
+func GetProjectConfigFrom(configfile string) (*ProjectInfo, error) {
+	info := ProjectInfo{Version: ConfigVersion}
+
+	f, err := os.Open(configfile)
+	if err != nil {
+		return &info, err
+	}
+	if err := yaml.NewDecoder(f).Decode(&info); err != nil {
+		return &info, err
+	}
+
+	return &info, nil
 }
 
 func GetProjectConfig() (string, *ProjectInfo, error) {

@@ -176,3 +176,7 @@ func DeleteProject(ctx *command.Context, orgId, projectID uint64) error {
 
 	return nil
 }
+
+func CreateProject() {
+
+}

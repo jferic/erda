@@ -146,6 +146,15 @@ func getApplicationId(ctx *command.Context, orgId, projectId uint64, application
 		application = ctx.CurrentApplication.Name
 	}
 
+	if applicationId <= 0 && ctx.CurrentApplication.ID <= 0 && application != "" {
+		appId, err := common.GetApplicationIdByName(ctx, orgId, projectId, application)
+		if err != nil {
+			return application, applicationId, err
+		}
+		ctx.CurrentApplication.ID = appId
+		applicationId = appId
+	}
+
 	if applicationId <= 0 && ctx.CurrentApplication.ID <= 0 {
 		return application, applicationId, errors.New("Invalid application id")
 	}

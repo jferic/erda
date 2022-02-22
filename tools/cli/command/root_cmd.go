@@ -38,13 +38,14 @@ import (
 )
 
 var (
-	host         string // erda host, format: http[s]://<domain> eg: https://erda.cloud
-	Remote       string // git remote name for erda repo
-	username     string
-	password     string
-	debugMode    bool
-	Interactive  bool
-	IsCompletion bool
+	host          string // erda host, format: http[s]://<domain> eg: https://erda.cloud
+	Remote        string // git remote name for erda repo
+	ProjectConfig string
+	username      string
+	password      string
+	debugMode     bool
+	Interactive   bool
+	IsCompletion  bool
 )
 
 // Cmds which not require login
@@ -126,7 +127,7 @@ func PrepareCtx(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	if strings.HasPrefix(u, "clone") {
+	if strings.HasPrefix(u, "clone") || strings.HasPrefix(u, "push") {
 		u, err := url.Parse(args[0])
 		if err != nil {
 			return err
@@ -208,7 +209,16 @@ func ensureSessionInfos() (map[string]status.StatusInfo, error) {
 
 func parseCtx() error {
 	if host == "" {
-		_, config, err := GetProjectConfig()
+		var config *ProjectInfo
+		var err error
+
+		// TODO fix: make sure it push command
+		if ProjectConfig != "" {
+			config, err = GetProjectConfigFrom(ProjectConfig)
+		} else {
+			_, config, err = GetProjectConfig()
+		}
+
 		if err != nil && err != utils.NotExist {
 			return err
 		}
@@ -219,7 +229,7 @@ func parseCtx() error {
 			ctx.CurrentProject.ID = config.ProjectId
 			ctx.CurrentProject.Name = config.Project
 			for _, a := range config.Applications {
-				a2 := ApplicationInfo2{a.ApplicationId, a.Application}
+				a2 := ApplicationInfo2{a.ApplicationId, a.Application, a.Mode, a.Desc}
 				ctx.Applications = append(ctx.Applications, a2)
 			}
 		}
@@ -273,19 +283,32 @@ func parseCtx() error {
 			}
 		}
 	}
+
 	slashIndex := strings.Index(host, "://")
 	if slashIndex < 0 {
 		return errors.Errorf("invalid host format, it should be http[s]://<domain>")
 	}
-	hostHasOpenApi := strings.Index(host, "openapi.") != -1
+
 	openAPIAddr := host
+
+	orgIndex := strings.Index(host, "-org.")
+	if orgIndex != -1 {
+		openAPIAddr = host[:slashIndex+3] + host[orgIndex+5:]
+	}
+
+	oneIndex := strings.Index(openAPIAddr, "://one.")
+	if oneIndex != -1 {
+		openAPIAddr = openAPIAddr[:oneIndex+3] + openAPIAddr[oneIndex+7:]
+	}
+
+	hostHasOpenApi := strings.Index(openAPIAddr, "openapi.") != -1
 	if strings.HasPrefix(host, "https") {
 		if !hostHasOpenApi {
-			openAPIAddr = "https://openapi." + host[slashIndex+3:]
+			openAPIAddr = "https://openapi." + openAPIAddr[slashIndex+3:]
 		}
 	} else {
 		if !hostHasOpenApi {
-			openAPIAddr = "http://openapi." + host[slashIndex+3:]
+			openAPIAddr = "http://openapi." + openAPIAddr[slashIndex+3:]
 		}
 	}
 
@@ -294,34 +317,6 @@ func parseCtx() error {
 
 	return nil
 }
-
-//func fetchOrgIdByName(orgName string) (apistructs.OrgFetchResponse, error) {
-//	var b bytes.Buffer
-//	response, err := ctx.Get().Path(fmt.Sprintf("/api/orgs/%s", orgName)).Do().Body(&b)
-//	if err != nil {
-//		return apistructs.OrgFetchResponse{}, err
-//	}
-//
-//	if !response.IsOK() {
-//		return apistructs.OrgFetchResponse{}, fmt.Errorf(utils.FormatErrMsg("get organization detail",
-//			fmt.Sprintf("failed to request, status-code: %d, content-type: %s, raw bod: %s",
-//				response.StatusCode(), response.ResponseHeader("Content-Type"), b.String()), false))
-//	}
-//
-//	var resp apistructs.OrgFetchResponse
-//	if err := json.Unmarshal(b.Bytes(), &resp); err != nil {
-//		return apistructs.OrgFetchResponse{}, fmt.Errorf(utils.FormatErrMsg("get organization detail",
-//			fmt.Sprintf("failed to unmarshal organization detail response ("+err.Error()+")"), false))
-//	}
-//
-//	if !resp.Success {
-//		return resp, fmt.Errorf(utils.FormatErrMsg("get organization detail",
-//			fmt.Sprintf("failed to request, error code: %s, error message: %s",
-//				resp.Error.Code, resp.Error.Msg), false))
-//	}
-//
-//	return resp, nil
-//}
 
 func fetchGitCredentialStorage() string {
 	c, err := exec.Command("git", "config", "credential.helper").Output()
@@ -420,6 +415,7 @@ func Execute() {
 	RootCmd.PersistentFlags().StringVarP(&password, "password", "p", "", "Erda password to authenticate")
 	RootCmd.PersistentFlags().BoolVarP(&debugMode, "verbose", "V", false, "if true, enable verbose mode")
 	RootCmd.PersistentFlags().BoolVarP(&Interactive, "interactive", "", true, "if true, interactive with user")
+	RootCmd.PersistentFlags().StringVarP(&ProjectConfig, "project-config", "", "", "the config file for Erda project")
 
 	RootCmd.Execute()
 }

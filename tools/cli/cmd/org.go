@@ -99,6 +99,14 @@ func getOrgId(ctx *command.Context, org string, orgId uint64) (string, uint64, e
 		org = ctx.CurrentOrg.Name
 	}
 
+	if orgId <= 0 && ctx.CurrentOrg.ID <= 0 && org != "" {
+		o, err := common.GetOrgDetail(ctx, org)
+		if err != nil {
+			return org, orgId, err
+		}
+		ctx.CurrentOrg.ID = o.ID
+		orgId = o.ID
+	}
 	if orgId <= 0 && ctx.CurrentOrg.ID <= 0 {
 		return org, orgId, errors.New("Invalid organization id")
 	}
