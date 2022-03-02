@@ -67,7 +67,7 @@ func ApplicationCreate(ctx *command.Context, //projectId uint64, project,
 		return err
 	}
 
-	app, err := common.CreateApplication(ctx, projectId, name, desc, mode)
+	app, err := common.CreateApplication(ctx, projectId, name, mode, desc)
 	if err != nil {
 		return err
 	}
