@@ -229,7 +229,8 @@ func parseCtx() error {
 			ctx.CurrentProject.ID = config.ProjectId
 			ctx.CurrentProject.Name = config.Project
 			for _, a := range config.Applications {
-				a2 := ApplicationInfo2{a.ApplicationId, a.Application, a.Mode, a.Desc}
+				a2 := ApplicationInfo2{a.ApplicationId, a.Application, a.Mode, a.Desc,
+					a.Sonarhost, a.Sonartoken, a.Sonarproject}
 				ctx.Applications = append(ctx.Applications, a2)
 			}
 		}

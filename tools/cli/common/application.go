@@ -212,7 +212,8 @@ func DeleteApplication(ctx *command.Context, applicationId uint64) error {
 	return nil
 }
 
-func CreateApplication(ctx *command.Context, projectId uint64, application, mode, desc string) (apistructs.ApplicationDTO, error) {
+func CreateApplication(ctx *command.Context, projectId uint64, application, mode, desc,
+	sonarhost, sonartoken, sonarproject string) (apistructs.ApplicationDTO, error) {
 	var request apistructs.ApplicationCreateRequest
 	var response apistructs.ApplicationCreateResponse
 	var b bytes.Buffer
@@ -221,6 +222,13 @@ func CreateApplication(ctx *command.Context, projectId uint64, application, mode
 	request.Mode = apistructs.ApplicationMode(mode)
 	request.Desc = desc
 	request.ProjectID = projectId
+	if sonarhost != "" {
+		request.SonarConfig = &apistructs.SonarConfig{
+			Host:       sonarhost,
+			Token:      sonartoken,
+			ProjectKey: sonarproject,
+		}
+	}
 
 	resp, err := ctx.Post().Path("/api/applications").JSONBody(request).Do().Body(&b)
 	if err != nil {

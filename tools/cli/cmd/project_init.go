@@ -70,7 +70,18 @@ func ProjectInit(ctx *command.Context, org, project string, cloneApps bool) erro
 		return err
 	}
 	for _, a := range appList {
-		aInfo := command.ApplicationInfo{a.Name, a.ID, a.Mode, a.Desc}
+		var (
+			sonarHost    string
+			sonarToken   string
+			sonarProject string
+		)
+		if a.SonarConfig != nil {
+			sonarHost = a.SonarConfig.Host
+			sonarToken = a.SonarConfig.Token
+			sonarProject = a.SonarConfig.ProjectKey
+		}
+		aInfo := command.ApplicationInfo{a.Name, a.ID, a.Mode, a.Desc,
+			sonarHost, sonarToken, sonarProject}
 		pInfo.Applications = append(pInfo.Applications, aInfo)
 
 		if cloneApps {

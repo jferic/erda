@@ -26,6 +26,9 @@ type ApplicationInfo struct {
 	ApplicationId uint64 `yaml:"id"`
 	Mode          string `yaml:"mode"`
 	Desc          string `yaml:"desc"`
+	Sonarhost     string `yaml:"sonarhost"`
+	Sonartoken    string `yaml:"sonartoken"`
+	Sonarproject  string `yaml:"sonarproject"`
 }
 
 func GetProjectConfigFrom(configfile string) (*ProjectInfo, error) {
