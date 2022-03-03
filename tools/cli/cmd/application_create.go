@@ -39,12 +39,15 @@ var APPLICATIONCREATE = command.Command{
 			Doc:          "application type, available values：LIBRARY, SERVICE, BIGDATA, PROJECT_SERVICE",
 			DefaultValue: "SERVICE"},
 		command.StringFlag{"d", "description", "description of the application", ""},
+		command.StringFlag{Short: "s", Name: "sonarhost", Doc: "host url of sonarqube", DefaultValue: ""},
+		command.StringFlag{Short: "t", Name: "sonartoken", Doc: "token of project in sonarqube", DefaultValue: ""},
+		command.StringFlag{Short: "k", Name: "sonarproject", Doc: "project key in sonarqube", DefaultValue: ""},
 	},
 	Run: ApplicationCreate,
 }
 
 func ApplicationCreate(ctx *command.Context, //projectId uint64, project,
-	name, mode, desc string) error {
+	name, mode, desc, sonarhost, sonartoken, sonarproject string) error {
 	if name == "" {
 		return errors.New("Invalid project name")
 	}
@@ -67,14 +70,25 @@ func ApplicationCreate(ctx *command.Context, //projectId uint64, project,
 		return err
 	}
 
-	app, err := common.CreateApplication(ctx, projectId, name, mode, desc)
+	app, err := common.CreateApplication(ctx, projectId, name, mode, desc, sonarhost, sonartoken, sonarproject)
 	if err != nil {
 		return err
 	}
 
+	var (
+		sonarHost    string
+		sonarToken   string
+		sonarProject string
+	)
+	if app.SonarConfig != nil {
+		sonarHost = app.SonarConfig.Host
+		sonarToken = app.SonarConfig.Token
+		sonarProject = app.SonarConfig.ProjectKey
+	}
 	// TODO clone project into pwd
 	pInfo.Applications = append(pInfo.Applications, command.ApplicationInfo{
 		app.Name, app.ID, app.Mode, app.Desc,
+		sonarHost, sonarToken, sonarProject,
 	})
 
 	err = command.SetProjectConfig(config, pInfo)

@@ -62,10 +62,13 @@ type ProjectInfo2 struct {
 }
 
 type ApplicationInfo2 struct {
-	ID   uint64
-	Name string
-	Mode string
-	Desc string
+	ID           uint64
+	Name         string
+	Mode         string
+	Desc         string
+	Sonarhost    string
+	Sonartoken   string
+	Sonarproject string
 }
 
 func (c *Context) Get() *httpclient.Request {

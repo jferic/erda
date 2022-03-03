@@ -118,7 +118,18 @@ func Clone(ctx *command.Context, ustr string, cloneApps bool) error {
 		return err
 	}
 	for _, a := range appList {
-		aInfo := command.ApplicationInfo{a.Name, a.ID, a.Mode, a.Desc}
+		var (
+			sonarHost    string
+			sonarToken   string
+			sonarProject string
+		)
+		if a.SonarConfig != nil {
+			sonarHost = a.SonarConfig.Host
+			sonarToken = a.SonarConfig.Token
+			sonarProject = a.SonarConfig.ProjectKey
+		}
+		aInfo := command.ApplicationInfo{a.Name, a.ID, a.Mode, a.Desc,
+			sonarHost, sonarToken, sonarProject}
 		pInfo.Applications = append(pInfo.Applications, aInfo)
 
 		if t == utils.ProjectURL && cloneApps {
@@ -153,8 +164,20 @@ func Clone(ctx *command.Context, ustr string, cloneApps bool) error {
 			return err
 		}
 
+		var (
+			sonarHost    string
+			sonarToken   string
+			sonarProject string
+		)
+		if a.SonarConfig != nil {
+			sonarHost = a.SonarConfig.Host
+			sonarToken = a.SonarConfig.Token
+			sonarProject = a.SonarConfig.ProjectKey
+		}
+
 		pInfo.Applications = append(pInfo.Applications, command.ApplicationInfo{
 			a.Name, a.ID, a.Mode, a.Desc,
+			sonarHost, sonarToken, sonarProject,
 		})
 
 		successInfo = fmt.Sprintf("Application '%s/%s' cloned.", a.ProjectName, a.Name)
