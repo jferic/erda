@@ -44,8 +44,7 @@ var APPLICATIONCREATE = command.Command{
 	Run: ApplicationCreate,
 }
 
-func ApplicationCreate(ctx *command.Context,
-	name, mode, desc, sonarhost, sonartoken, sonarproject string) error {
+func ApplicationCreate(ctx *command.Context, name, mode, desc, sonarhost, sonartoken, sonarproject string) error {
 	if name == "" {
 		return errors.New("Invalid project name")
 	}

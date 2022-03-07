@@ -60,7 +60,6 @@ func ErdaInit(ctx *command.Context, cpuQuota float64, memQuota int) error {
 	p["ServiceCPU"] = fmt.Sprintf("%f", cpuQuota)
 	p["ServiceMemory"] = strconv.Itoa(memQuota)
 
-	// TODO more erda-xxx.yml
 	erdaYmls := []string{
 		filepath.Join(pdir, "erda.yml"),
 	}

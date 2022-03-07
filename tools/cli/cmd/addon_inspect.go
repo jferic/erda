@@ -28,17 +28,12 @@ var ADDONINSPECT = command.Command{
 	ShortHelp:  "inspect addon",
 	Example:    "$ erda-cli addon inspect --addon-id=<id>",
 	Flags: []command.Flag{
-		//command.Uint64Flag{Short: "", Name: "org-id", Doc: "the id of an organization", DefaultValue: 0},
-		//command.StringFlag{Short: "", Name: "org", Doc: "the name of an organization", DefaultValue: ""},
 		command.StringFlag{Short: "", Name: "addon-id", Doc: "the id of an addon", DefaultValue: ""},
 	},
 	Run: AddonInspect,
 }
 
-func AddonInspect(ctx *command.Context, //orgId uint64, org,
-	addonId string) error {
-	//checkOrgParam(org, orgId)
-
+func AddonInspect(ctx *command.Context, addonId string) error {
 	var org string
 	var orgId uint64
 

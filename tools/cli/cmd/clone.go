@@ -45,11 +45,7 @@ var CLONE = command.Command{
 
 func Clone(ctx *command.Context, ustr string, cloneApps bool) error {
 	var org string
-	var orgId uint64
-	//var project string
-	var projectId uint64
-	//var application string
-	var applicationId uint64
+	var orgId, projectId, applicationId uint64
 
 	u, err := url.Parse(ustr)
 	if err != nil {

@@ -31,10 +31,6 @@ var ADDONCREATE = command.Command{
 	ShortHelp:  "create addon",
 	Example:    "$ erda-cli addon create --project=<name> --workspace=<DEV/TEST/STAGING/PROD> --addon-type=<erda/custom> --addon-name=<custom/aliyun-rds>",
 	Flags: []command.Flag{
-		//command.Uint64Flag{Short: "", Name: "org-id", Doc: "the id of an organization", DefaultValue: 0},
-		//command.Uint64Flag{Short: "", Name: "project-id", Doc: "the id of a project", DefaultValue: 0},
-		//command.StringFlag{Short: "", Name: "org", Doc: "the name of an organization", DefaultValue: ""},
-		//command.StringFlag{Short: "", Name: "project", Doc: "the name of a project", DefaultValue: ""},
 		command.StringFlag{Short: "", Name: "workspace", Doc: "the env workspace of an addon", DefaultValue: ""},
 		command.StringFlag{Short: "", Name: "addon-type", Doc: "the type of the addon, one of [erda|custom]", DefaultValue: "custom"},
 		command.StringFlag{Short: "", Name: "addon-name", Doc: "the name of the addon", DefaultValue: "custom"},
@@ -42,17 +38,11 @@ var ADDONCREATE = command.Command{
 		command.StringFlag{Short: "", Name: "configs", Doc: "the configs of the addon instance in format of key/value. (e.g. --configs='key1=value1,key2=value2')"},
 		command.StringFlag{Short: "", Name: "plan", Doc: "the plan of the addon instance", DefaultValue: ""},
 		command.IntFlag{Short: "", Name: "wait-minutes", Doc: "the minutes to wait erad addon create", DefaultValue: 3},
-		// command.StringListFlag{Short: "", Name: "erda-yaml", Doc: "the erda.yml path to add addon", DefaultValue: nil},
 	},
 	Run: AddonCreate,
 }
 
-func AddonCreate(ctx *command.Context, //orgId, projectId uint64, org, project,
-	workspace, addonType, addonName, name, configs, plan string, waitMinutes int) error {
-
-	//checkOrgParam(org, orgId)
-	//checkProjectParam(project, projectId)
-
+func AddonCreate(ctx *command.Context, workspace, addonType, addonName, name, configs, plan string, waitMinutes int) error {
 	var org, project string
 	var orgId, projectId uint64
 

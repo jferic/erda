@@ -74,9 +74,6 @@ func ArgApplicationCompletion(ctx *cobra.Command, args []string, toComplete stri
 }
 
 func ApplicationClone(ctx *command.Context, application string) error {
-	//checkOrgParam(org, orgId)
-	//checkProjectParam(project, projectId)
-
 	var org, project string
 	var orgId, projectId, applicationId uint64
 

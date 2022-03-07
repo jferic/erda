@@ -29,7 +29,6 @@ import (
 	"github.com/erda-project/erda/tools/cli/utils"
 )
 
-// BUILD command
 var PIPELINERUN = command.Command{
 	Name:       "run",
 	ParentName: "PIPELINE",

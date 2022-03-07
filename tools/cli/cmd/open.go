@@ -23,12 +23,9 @@ var OPEN = command.Command{
 	ShortHelp: "open the web page in browser",
 	Example:   "$ erda-cli open --application=<name>",
 	Flags: []command.Flag{
-		//command.Uint64Flag{Short: "", Name: "org-id", Doc: "the id of an organization", DefaultValue: 0},
-		//command.Uint64Flag{Short: "", Name: "project-id", Doc: "the id of a project", DefaultValue: 0},
 		command.StringFlag{Short: "", Name: "org", Doc: "the name of an organization", DefaultValue: ""},
 		command.StringFlag{Short: "", Name: "project", Doc: "the name of a project", DefaultValue: ""},
 		command.StringFlag{Short: "", Name: "application", Doc: "the name of an application ", DefaultValue: ""},
-		//command.Uint64Flag{Short: "", Name: "application-id", Doc: "the id of an application ", DefaultValue: 0},
 	},
 	Run: Open,
 }

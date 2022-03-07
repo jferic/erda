@@ -25,7 +25,6 @@ var APPLICATIONDELETE = command.Command{
 	ShortHelp:  "delete application",
 	Example:    "$ erda-cli application delete --application-id=<id>",
 	Flags: []command.Flag{
-		//command.Uint64Flag{Short: "", Name: "application-id", Doc: "the id of an application ", DefaultValue: 0},
 		command.StringFlag{Short: "", Name: "application", Doc: "the name of an application ", DefaultValue: ""},
 	},
 	Run: ApplicationDelete,
@@ -54,8 +53,6 @@ func ApplicationDelete(ctx *command.Context, application string) error {
 	if err != nil {
 		return err
 	}
-
-	// TODO rm app in pwd ?
 
 	ctx.Succ("Application '%s' deleted.", application)
 	return nil

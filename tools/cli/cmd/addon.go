@@ -32,26 +32,18 @@ var ADDON = command.Command{
 	Example:   "$ erda-cli addon --project=<name> --workspace=<ENV>",
 	Flags: []command.Flag{
 		command.BoolFlag{Short: "", Name: "no-headers", Doc: "if true, don't print headers (default print headers)", DefaultValue: false},
-		//command.Uint64Flag{Short: "", Name: "org-id", Doc: "the id of an organization", DefaultValue: 0},
-		//command.Uint64Flag{Short: "", Name: "project-id", Doc: "the id of a project", DefaultValue: 0},
-		//command.StringFlag{Short: "", Name: "org", Doc: "the name of an organization", DefaultValue: ""},
-		//command.StringFlag{Short: "", Name: "project", Doc: "the name of a project", DefaultValue: ""},
 		command.StringFlag{Short: "", Name: "workspace", Doc: "the env workspace", DefaultValue: ""},
 	},
 	Run: GetAddons,
 }
 
-func GetAddons(ctx *command.Context, noHeaders bool, //orgId, projectId uint64, org, project,
-	workspace string) error {
+func GetAddons(ctx *command.Context, noHeaders bool, workspace string) error {
 	if workspace != "" {
 		if !apistructs.WorkSpace(workspace).Valide() {
 			return errors.New(fmt.Sprintf("Invalide workspace %s, should be one in %s",
 				workspace, apistructs.WorkSpace("").ValideList()))
 		}
 	}
-
-	//checkOrgParam(org, orgId)
-	//checkProjectParam(project, projectId)
 
 	var org, project string
 	var orgId, projectId uint64

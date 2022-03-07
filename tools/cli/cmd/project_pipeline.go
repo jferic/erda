@@ -33,7 +33,6 @@ var PROJECTPIPELINE = command.Command{
 }
 
 func ProjectPipeline(ctx *command.Context, name, application, ref, filename string) error {
-
 	var org, project string
 	var orgId, projectId uint64
 

@@ -28,19 +28,12 @@ var PROJECTINSPECT = command.Command{
 	ShortHelp:  "inspect project detail information",
 	Example:    "$ erda-cli project inspect --project=<name>",
 	Flags: []command.Flag{
-		//command.Uint64Flag{Short: "", Name: "org-id", Doc: "the id of an organization", DefaultValue: 0},
-		//command.Uint64Flag{Short: "", Name: "project-id", Doc: "the id of a project", DefaultValue: 0},
-		//command.StringFlag{Short: "", Name: "org", Doc: "the name of an organization", DefaultValue: ""},
 		command.StringFlag{Short: "", Name: "project", Doc: "the name of a project", DefaultValue: ""},
 	},
 	Run: ProjectInspect,
 }
 
-func ProjectInspect(ctx *command.Context, project string, //orgId, projectId uint64, org, project string
-) error {
-	//checkOrgParam(org, orgId)
-	//checkProjectParam(project, projectId)
-
+func ProjectInspect(ctx *command.Context, project string) error {
 	var org string
 	var orgId, projectId uint64
 

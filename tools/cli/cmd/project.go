@@ -35,19 +35,13 @@ var PROJECT = command.Command{
 	Example:   "$ erda-cli project",
 	Flags: []command.Flag{
 		command.BoolFlag{Short: "", Name: "no-headers", Doc: "if true, don't print headers (default print headers)", DefaultValue: false},
-		//command.Uint64Flag{Short: "", Name: "org-id", Doc: "the id of an organization ", DefaultValue: 0},
-		//command.StringFlag{Short: "", Name: "org", Doc: "the name of an organization ", DefaultValue: ""},
 		command.IntFlag{Short: "", Name: "page-size", Doc: "the number of page size", DefaultValue: 10},
 		command.BoolFlag{Short: "", Name: "with-owner", Doc: "if true, return owners of projects", DefaultValue: false},
 	},
 	Run: GetProjects,
 }
 
-func GetProjects(ctx *command.Context, noHeaders bool, // orgId uint64, org string,
-	pageSize int, withOwner bool) error {
-
-	//checkOrgParam(org, orgId)
-
+func GetProjects(ctx *command.Context, noHeaders bool, pageSize int, withOwner bool) error {
 	var org string
 	var orgId uint64
 

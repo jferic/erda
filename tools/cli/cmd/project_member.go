@@ -32,21 +32,13 @@ var PROJECTMEMBER = command.Command{
 	Example:    "$ erda-cli project member --org=<name>",
 	Flags: []command.Flag{
 		command.BoolFlag{Short: "", Name: "no-headers", Doc: "if true, don't print headers (default print headers)", DefaultValue: false},
-		//command.Uint64Flag{Short: "", Name: "org-id", Doc: "the id of an organization", DefaultValue: 0},
-		//command.Uint64Flag{Short: "", Name: "project-id", Doc: "the id of a project", DefaultValue: 0},
-		//command.StringFlag{Short: "", Name: "org", Doc: "the name of an organization", DefaultValue: ""},
-		//command.StringFlag{Short: "", Name: "project", Doc: "the name of a project", DefaultValue: ""},
 		command.IntFlag{Short: "", Name: "page-size", Doc: "the number of page size", DefaultValue: 10},
 		command.StringListFlag{Short: "", Name: "roles", Doc: "roles to list", DefaultValue: nil},
 	},
 	Run: ProjectMember,
 }
 
-func ProjectMember(ctx *command.Context, noHeaders bool, //orgId, projectId uint64, org, project string,
-	pageSize int, roles []string) error {
-	//checkOrgParam(org, orgId)
-	//checkProjectParam(project, projectId)
-
+func ProjectMember(ctx *command.Context, noHeaders bool, pageSize int, roles []string) error {
 	var org, project string
 	var orgId, projectId uint64
 
