@@ -18,10 +18,16 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
+
+	"github.com/erda-project/erda/pkg/http/httpclient"
+
 	"strconv"
 
 	"github.com/pkg/errors"
 
+	pb "github.com/erda-project/erda-proto-go/msp/tenant/project/pb"
 	"github.com/erda-project/erda/apistructs"
 	"github.com/erda-project/erda/tools/cli/command"
 	"github.com/erda-project/erda/tools/cli/utils"
@@ -177,6 +183,121 @@ func DeleteProject(ctx *command.Context, orgId, projectID uint64) error {
 	return nil
 }
 
-func CreateProject() {
+func CreateProject(ctx *command.Context, orgId uint64, name, desc string,
+	resourceConfigs *apistructs.ResourceConfigs) (uint64, error) {
+	var request apistructs.ProjectCreateRequest
+	var response apistructs.ProjectCreateResponse
+	var b bytes.Buffer
 
+	request.Name = name
+	request.Desc = desc
+	request.OrgID = orgId
+	request.Template = "DevOps"
+	if resourceConfigs != nil {
+		request.ResourceConfigs = resourceConfigs
+	}
+
+	resp, err := ctx.Post().Path("/api/projects").
+		Header("Org-ID", strconv.FormatUint(orgId, 10)).
+		JSONBody(request).Do().Body(&b)
+	if err != nil {
+		return response.Data, fmt.Errorf(
+			utils.FormatErrMsg("create", "failed to request ("+err.Error()+")", false))
+	}
+
+	if !resp.IsOK() {
+		return response.Data, fmt.Errorf(utils.FormatErrMsg("create",
+			fmt.Sprintf("failed to request, status-code: %d, content-type: %s, raw bod: %s",
+				resp.StatusCode(), resp.ResponseHeader("Content-Type"), b.String()), false))
+	}
+
+	if err := json.Unmarshal(b.Bytes(), &response); err != nil {
+		return response.Data, fmt.Errorf(utils.FormatErrMsg("create",
+			fmt.Sprintf("failed to unmarshal project create response ("+err.Error()+")"), false))
+	}
+
+	if !response.Success {
+		return response.Data, fmt.Errorf(utils.FormatErrMsg("create",
+			fmt.Sprintf("failed to request, error code: %s, error message: %s",
+				response.Error.Code, response.Error.Msg), false))
+	}
+
+	return response.Data, nil
+}
+
+func CreateMSPProject(ctx *command.Context, projectId uint64, name string) (*pb.Project, error) {
+	var request pb.CreateProjectRequest
+	response := struct {
+		apistructs.Header
+		Data *pb.Project `json:"data"`
+	}{}
+	var b bytes.Buffer
+
+	request.Id = strconv.FormatUint(projectId, 10)
+	request.Name = name
+	request.DisplayName = name
+	request.Type = "DOP"
+
+	resp, err := ctx.Post().Path("/api/msp/tenant/project").
+		JSONBody(request).Do().Body(&b)
+
+	if err != nil {
+		return response.Data, fmt.Errorf(
+			utils.FormatErrMsg("create", "failed to request ("+err.Error()+")", false))
+	}
+
+	if !resp.IsOK() {
+		return response.Data, fmt.Errorf(utils.FormatErrMsg("create",
+			fmt.Sprintf("failed to request, status-code: %d, content-type: %s, raw bod: %s",
+				resp.StatusCode(), resp.ResponseHeader("Content-Type"), b.String()), false))
+	}
+
+	if err := json.Unmarshal(b.Bytes(), &response); err != nil {
+		return response.Data, fmt.Errorf(utils.FormatErrMsg("create",
+			fmt.Sprintf("failed to unmarshal project create response ("+err.Error()+")"), false))
+	}
+
+	return response.Data, nil
+}
+
+func ImportPackage(ctx *command.Context, orgId, projectId uint64, pkg string) (uint64, error) {
+	response := struct {
+		apistructs.Header
+		Data uint64
+	}{}
+	var b bytes.Buffer
+
+	f, err := os.Open(pkg)
+	if err != nil {
+		return 0, err
+	}
+	defer f.Close()
+
+	fileNameWithExt := filepath.Base(pkg)
+
+	resp, err := ctx.Post().
+		Path(fmt.Sprintf("/api/orgs/%d/projects/%d/package/actions/import", orgId, projectId)).
+		MultipartFormDataBody(map[string]httpclient.MultipartItem{
+			"file": {
+				Reader:   f,
+				Filename: fileNameWithExt,
+			},
+		}).Do().Body(&b)
+	if err != nil {
+		return response.Data, fmt.Errorf(
+			utils.FormatErrMsg("create", "failed to request ("+err.Error()+")", false))
+	}
+
+	if !resp.IsOK() {
+		return response.Data, fmt.Errorf(utils.FormatErrMsg("import",
+			fmt.Sprintf("failed to request, status-code: %d, content-type: %s, raw bod: %s",
+				resp.StatusCode(), resp.ResponseHeader("Content-Type"), b.String()), false))
+	}
+
+	if err := json.Unmarshal(b.Bytes(), &response); err != nil {
+		return response.Data, fmt.Errorf(utils.FormatErrMsg("import",
+			fmt.Sprintf("failed to unmarshal project import response ("+err.Error()+")"), false))
+	}
+
+	return response.Data, nil
 }

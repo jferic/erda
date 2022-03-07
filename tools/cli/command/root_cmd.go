@@ -411,7 +411,7 @@ func Execute() {
 	}
 
 	RootCmd.PersistentFlags().StringVar(&host, "host", "", "Erda host to visit (e.g. https://erda.cloud)")
-	RootCmd.PersistentFlags().StringVarP(&Remote, "remote", "r", "origin", "the remote for Erda repo")
+	RootCmd.PersistentFlags().StringVarP(&Remote, "remote", "", "origin", "the remote for Erda repo")
 	RootCmd.PersistentFlags().StringVarP(&username, "username", "u", "", "Erda username to authenticate")
 	RootCmd.PersistentFlags().StringVarP(&password, "password", "p", "", "Erda password to authenticate")
 	RootCmd.PersistentFlags().BoolVarP(&debugMode, "verbose", "V", false, "if true, enable verbose mode")

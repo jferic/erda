@@ -60,6 +60,30 @@ type ResourceConfigs struct {
 	DEV     *ResourceConfig `json:"DEV"`
 }
 
+func NewResourceConfigs() *ResourceConfigs {
+	return &ResourceConfigs{
+		PROD:    new(ResourceConfig),
+		STAGING: new(ResourceConfig),
+		TEST:    new(ResourceConfig),
+		DEV:     new(ResourceConfig),
+	}
+}
+
+func (cc ResourceConfigs) GetClusterConfig(workspace string) *ResourceConfig {
+	switch strings.ToLower(workspace) {
+	case "prod":
+		return cc.PROD
+	case "staging":
+		return cc.STAGING
+	case "test":
+		return cc.TEST
+	case "dev":
+		return cc.DEV
+	default:
+		return new(ResourceConfig)
+	}
+}
+
 func (cc ResourceConfigs) Check() error {
 	for k, v := range map[string]*ResourceConfig{
 		"production": cc.PROD,
@@ -489,6 +513,15 @@ type ImportProjectTemplateRequest struct {
 	ProjectName        string `json:"projectName"`
 	ProjectDisplayName string `json:"projectDisplayName"`
 	OrgID              int64  `json:"orgID"`
+	IdentityInfo
+}
+
+type ImportProjectPackageRequest struct {
+	ProjectID          uint64 `json:"projectID"`
+	ProjectName        string `json:"projectName"`
+	ProjectDisplayName string `json:"projectDisplayName"`
+	OrgID              int64  `json:"orgID"`
+	OrgName            string `json:"orgName"`
 	IdentityInfo
 }
 

@@ -32,13 +32,11 @@ var APPLICATIONCREATE = command.Command{
 	ShortHelp:  "create application",
 	Example:    "$ erda-cli application create -n <name>",
 	Flags: []command.Flag{
-		//command.Uint64Flag{Short: "", Name: "project-id", Doc: "the id of a project ", DefaultValue: 0},
-		//command.StringFlag{Short: "", Name: "project", Doc: "the name of a project ", DefaultValue: ""},
 		command.StringFlag{Short: "n", Name: "name", Doc: "the name of an application ", DefaultValue: ""},
 		command.StringFlag{Short: "m", Name: "mode",
 			Doc:          "application type, available values：LIBRARY, SERVICE, BIGDATA, PROJECT_SERVICE",
 			DefaultValue: "SERVICE"},
-		command.StringFlag{"d", "description", "description of the application", ""},
+		command.StringFlag{Short: "d", Name: "description", Doc: "description of the application", DefaultValue: ""},
 		command.StringFlag{Short: "s", Name: "sonarhost", Doc: "host url of sonarqube", DefaultValue: ""},
 		command.StringFlag{Short: "t", Name: "sonartoken", Doc: "token of project in sonarqube", DefaultValue: ""},
 		command.StringFlag{Short: "k", Name: "sonarproject", Doc: "project key in sonarqube", DefaultValue: ""},
@@ -46,7 +44,7 @@ var APPLICATIONCREATE = command.Command{
 	Run: ApplicationCreate,
 }
 
-func ApplicationCreate(ctx *command.Context, //projectId uint64, project,
+func ApplicationCreate(ctx *command.Context,
 	name, mode, desc, sonarhost, sonartoken, sonarproject string) error {
 	if name == "" {
 		return errors.New("Invalid project name")

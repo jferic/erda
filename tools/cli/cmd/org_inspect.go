@@ -28,21 +28,12 @@ var ORGINSPECT = command.Command{
 	ShortHelp:  "display detail information of one organization",
 	Example:    "$ erda-cli org inspect --org=<name>",
 	Flags: []command.Flag{
-		//command.Uint64Flag{Short: "", Name: "org-id", Doc: "the id of an organization", DefaultValue: 0},
 		command.StringFlag{Short: "", Name: "org", Doc: "the name of an organization", DefaultValue: ""},
 	},
 	Run: OrgInspect,
 }
 
 func OrgInspect(ctx *command.Context, org string) error {
-	//checkOrgParam(org, orgId)
-
-	var orgId uint64
-	org, orgId, err := getOrgId(ctx, org, orgId)
-	if err != nil {
-		return err
-	}
-
 	o, err := common.GetOrgDetail(ctx, org)
 	if err != nil {
 		return err

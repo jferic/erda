@@ -16,8 +16,10 @@ package utils
 
 import (
 	"errors"
+	"io/ioutil"
 	"os"
 	"os/user"
+	"path"
 	"path/filepath"
 )
 
@@ -214,4 +216,28 @@ func existProjErdaDir(path string) bool {
 
 func mkProjErdaDirPath(path string) string {
 	return filepath.Join(path, ProjectErdaDir)
+}
+
+func ListDir(dir string) ([]string, error) {
+	var files []string
+	fileInfos, err := ioutil.ReadDir(dir)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, fi := range fileInfos {
+		if fi.IsDir() {
+			filenames, err := ListDir(path.Join(dir, fi.Name()))
+			if err != nil {
+				return nil, err
+			}
+			for _, f := range filenames {
+				files = append(files, path.Join(dir, f))
+			}
+		} else {
+			files = append(files, path.Join(dir, fi.Name()))
+		}
+	}
+
+	return files, nil
 }
